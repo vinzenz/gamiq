@@ -1,0 +1,17 @@
+{
+  "name": "@gamiq/shared",
+  "private": true,
+  "type": "module",
+  "description": "Shared toolkit for Gamiq mobile browser games: viewport, input, loop, audio, storage, screen helpers.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@gamiq/tap-rush",
+  "private": true,
+  "type": "module",
+  "title": "Tap Rush",
+  "emoji": "🎯",
+  "description": "Tap the targets before they fade. Demo game showing the shared toolkit in action.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gamiq/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}
