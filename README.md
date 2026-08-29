@@ -35,6 +35,12 @@ Copies `games/tap-rush` (the demo/template) to `games/brick-breaker`, renames ev
 prints the next steps. The landing page picks the game up automatically — set `title`, `emoji`,
 and `description` in the game's `package.json` to control its card.
 
+## Game art
+
+Visual assets are generated with the `imagegen` tool (gpt-image-2). See
+[`docs/assets.md`](docs/assets.md) for the workflow: style consistency, transparency,
+sizes, WebP/2× budgets, and per-game `ASSETS.md` prompt logs.
+
 ## Quality checks
 
 ```sh

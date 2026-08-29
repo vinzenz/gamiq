@@ -10,10 +10,13 @@ Pages (https://vinzenz.github.io/gamiq/) by `.github/workflows/deploy.yml` on pu
 - `pnpm build` — build all games + landing page into `dist/`
 - `pnpm preview` — serve `dist/` on the LAN for phone/tablet testing
 - `pnpm new-game <slug> ["Title"]` — scaffold a new game from `games/tap-rush`
+- `docs/assets.md` — recommendations for building game assets with imagegen
 
 ## Conventions
 
 - One Vite app per game in `games/<slug>/`; the slug is the URL path (`/gamiq/<slug>/`).
+- Game art is generated with the `imagegen` tool — follow `docs/assets.md` (style blocks,
+  transparent sprites, WebP + 2× sizing budgets, per-game `ASSETS.md`).
 - `games/tap-rush` is both the demo game and the scaffold template — keep it working.
 - Keep games dependency-light; use `@gamiq/shared` (viewport, pointer input, loop, audio,
   storage, screen helpers) instead of ad-hoc implementations.
