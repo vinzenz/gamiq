@@ -165,8 +165,50 @@ body {
   border: 1px solid rgb(139 124 196 / 0.45);
   border-radius: 999px;
   background: rgb(22 13 40 / 0.8);
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tots-chip:active {
+  transform: scale(0.95);
+}
+
+.tots-chip-open {
+  border-color: rgb(255 210 63 / 0.9);
+  color: #ffd23f;
+}
+
+/* Goal explanation popover: lives below the HUD and never takes pointer
+   events, so explaining a goal can never block the board (see the
+   .tots-overlay[hidden] lesson). */
+.tots-goal-hint {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  width: min(340px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border: 1px solid rgb(255 210 63 / 0.45);
+  border-radius: 12px;
+  background: rgb(26 16 51 / 0.94);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+  color: rgb(240 236 255);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  animation: tots-pop 0.25s ease;
+  pointer-events: none;
+}
+
+.tots-goal-hint[hidden] {
+  display: none;
 }
 
 .tots-chip-img {

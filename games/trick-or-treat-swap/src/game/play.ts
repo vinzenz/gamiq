@@ -1,9 +1,9 @@
-import { trackPointers, unlockAudio } from '@gamiq/shared'
+import { loadJSON, saveJSON, trackPointers, unlockAudio } from '@gamiq/shared'
 import type { ValidMove } from '../engine/board.ts'
 import type { GoalDef, LevelGame } from '../engine/goals.ts'
 import { levelStars } from '../engine/goals.ts'
 import { areAdjacent, samePos } from '../engine/pos.ts'
-import type { GameEvent, Pos, SpawnedCell } from '../engine/types.ts'
+import type { GameEvent, Pos, SpawnedCell, TileType } from '../engine/types.ts'
 import { LEVELS, levelGame } from '../levels/index.ts'
 import { sfx } from './audio.ts'
 import { BoardView, type FallTween } from './board-view.ts'
@@ -51,8 +51,53 @@ const OBSTACLE_COLORS: Record<string, string> = {
 }
 
 interface Chip {
-  chip: HTMLDivElement
+  chip: HTMLButtonElement
   count: HTMLSpanElement
+}
+
+const TILE_LABELS: Record<TileType, string> = {
+  pumpkin: 'pumpkins',
+  ghost: 'ghosts',
+  skull: 'skulls',
+  bat: 'bats',
+  candy: 'candies',
+  potion: 'potions',
+}
+
+const MODIFIER_LABELS: Record<string, string> = {
+  cobweb: 'cobweb',
+  gravestone: 'gravestone',
+  ice: 'cursed ice',
+  lock: 'lock',
+  slime: 'slime',
+}
+
+/** Plain-language goal description — shown on chip tap and on first sight. */
+function describeGoal(goal: GoalDef): string {
+  switch (goal.kind) {
+    case 'collect':
+      return `Collect ${goal.count} ${TILE_LABELS[goal.color]}: match them or blast them with power-ups.`
+    case 'deliver':
+      return `Deliver ${goal.count} ${TILE_LABELS[goal.color]}: clear matches on the bottom row so they drop into the basket.`
+    case 'clear-modifier': {
+      const match = /^([a-z]+)(?:-(\d+))?$/.exec(goal.modifier)
+      const root = match?.[1] ?? goal.modifier
+      const layers = Number(match?.[2] ?? 1)
+      const base = MODIFIER_LABELS[root] ?? root
+      const label =
+        layers >= 2 ? `${layers === 2 ? 'double' : 'triple'} ${base}s` : `${base}s`
+      return `Clear every ${label}: match next to them or hit them with power-ups.`
+    }
+    case 'boss':
+      return `Defeat the boss: land ${goal.hits} hits — matches next to it and power-up blasts hurt it.`
+  }
+}
+
+const GOAL_HINT_SEEN_KEY = 'trick-or-treat-swap:goal-hint-seen'
+
+/** Goal kinds the player has already been shown a hint for (persistent). */
+function loadGoalHintSeen(): Record<string, true> {
+  return loadJSON(GOAL_HINT_SEEN_KEY, {})
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -92,9 +137,13 @@ class PlayScreen implements Screen {
 
   readonly #hud: HTMLElement
   readonly #overlay: HTMLElement
+  readonly #goalHint: HTMLElement
   readonly #movesEl: HTMLElement
   readonly #chips: Chip[] = []
   readonly #hasDeliver: boolean
+
+  #goalHintTimer = 0
+  #hintIndex = -1
 
   #queue: Step[] = []
   #current: Step | undefined
@@ -121,10 +170,12 @@ class PlayScreen implements Screen {
     const hud = this.#buildHud(root)
     this.#hud = hud.hud
     this.#movesEl = hud.movesEl
+    this.#goalHint = hud.goalHint
     this.#overlay = el('div', 'tots-overlay', root)
     this.#overlay.hidden = true
     this.#buildBanner(root)
     this.#updateChips()
+    this.#showFirstTimeGoalHint()
 
     this.#stopPointers = trackPointers(host.canvas, {
       down: (p) => this.#onDown(p.x, p.y),
@@ -213,6 +264,7 @@ class PlayScreen implements Screen {
   dispose(): void {
     this.#stopPointers()
     this.#tutorial.dispose()
+    window.clearTimeout(this.#goalHintTimer)
   }
 
   // — Replay sequencer ————————————————————————————————————————————————————
@@ -731,7 +783,11 @@ class PlayScreen implements Screen {
 
   // — HUD & overlays ——————————————————————————————————————————————————————
 
-  #buildHud(root: HTMLElement): { hud: HTMLElement; movesEl: HTMLElement } {
+  #buildHud(root: HTMLElement): {
+    hud: HTMLElement
+    movesEl: HTMLElement
+    goalHint: HTMLElement
+  } {
     const hud = el('div', 'tots-hud', root)
     const top = el('div', 'tots-hud-top', hud)
 
@@ -755,20 +811,34 @@ class PlayScreen implements Screen {
     el('span', 'tots-icon-spacer', top)
 
     const goalsRow = el('div', 'tots-goals', hud)
-    for (const goal of this.#bundle.level.goals) {
-      this.#chips.push(this.#buildChip(goalsRow, goal))
-    }
-    return { hud, movesEl }
+    this.#bundle.level.goals.forEach((goal, index) => {
+      this.#chips.push(this.#buildChip(goalsRow, goal, index))
+    })
+    const goalHint = el('div', 'tots-goal-hint', hud)
+    goalHint.hidden = true
+    return { hud, movesEl, goalHint }
   }
 
-  #buildChip(row: HTMLElement, goal: GoalDef): Chip {
-    const chip = el('div', 'tots-chip', row)
+  #buildChip(row: HTMLElement, goal: GoalDef, index: number): Chip {
+    const description = describeGoal(goal)
+    const chip = el('button', 'tots-chip', row)
+    chip.type = 'button'
+    chip.setAttribute('aria-label', description)
+    chip.addEventListener('click', () => {
+      unlockAudio()
+      this.#toggleGoalHint(index)
+    })
     if (goal.kind === 'collect' || goal.kind === 'deliver') {
       const img = el('img', 'tots-chip-img', chip)
       img.src = TILE_URLS[goal.color]
       img.alt = goal.color
       img.draggable = false
-      if (goal.kind === 'deliver') chip.classList.add('tots-chip-deliver')
+      if (goal.kind === 'deliver') {
+        chip.classList.add('tots-chip-deliver')
+        const arrow = el('span', 'tots-chip-emoji', chip)
+        arrow.textContent = '⬇'
+        arrow.setAttribute('aria-hidden', 'true')
+      }
     } else {
       const url = goal.kind === 'clear-modifier' ? modifierSpriteUrl(goal.modifier) : undefined
       const icon = el('span', 'tots-chip-emoji', chip)
@@ -802,6 +872,43 @@ class PlayScreen implements Screen {
       void chip.offsetWidth
       chip.classList.add('tots-pulse')
     }
+  }
+
+  // — Goal hints ———————————————————————————————————————————————————————————
+
+  #toggleGoalHint(index: number): void {
+    if (this.#hintIndex === index) this.#hideGoalHint()
+    else this.#showGoalHint(index)
+  }
+
+  #showGoalHint(index: number): void {
+    const goal = this.#bundle.level.goals[index]
+    if (!goal) return
+    this.#hintIndex = index
+    this.#goalHint.textContent = describeGoal(goal)
+    this.#goalHint.hidden = false
+    for (const [i, { chip }] of this.#chips.entries()) {
+      chip.classList.toggle('tots-chip-open', i === index)
+    }
+    window.clearTimeout(this.#goalHintTimer)
+    this.#goalHintTimer = window.setTimeout(() => this.#hideGoalHint(), 6000)
+  }
+
+  #hideGoalHint(): void {
+    this.#hintIndex = -1
+    this.#goalHint.hidden = true
+    for (const { chip } of this.#chips) chip.classList.remove('tots-chip-open')
+    window.clearTimeout(this.#goalHintTimer)
+  }
+
+  /** First level in play order introducing a goal kind explains itself once. */
+  #showFirstTimeGoalHint(): void {
+    const seen = loadGoalHintSeen()
+    const index = this.#bundle.level.goals.findIndex((goal) => seen[goal.kind] !== true)
+    if (index === -1) return
+    this.#showGoalHint(index)
+    seen[this.#bundle.level.goals[index]!.kind] = true
+    saveJSON(GOAL_HINT_SEEN_KEY, seen)
   }
 
   #buildBanner(root: HTMLElement): void {
