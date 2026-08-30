@@ -3,3 +3,4 @@ dist/
 .pi/
 .agents/
 .rohrpost/tickets.jsonl
+__pycache__/
