@@ -873,6 +873,10 @@ class PlayScreen implements Screen {
   }
 
   #openOverlay(): HTMLElement {
+    // Guard against the overlay having been detached (devtools removal, or a
+    // future dispose/reuse ordering slip): a panel mounted into a detached
+    // node is invisible and the frozen result looks like a hang.
+    if (!this.#overlay.isConnected) this.element.append(this.#overlay)
     this.#overlay.replaceChildren()
     this.#overlay.hidden = false
     return el('div', 'tots-panel', this.#overlay)

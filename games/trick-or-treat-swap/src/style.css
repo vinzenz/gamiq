@@ -254,6 +254,13 @@ body {
   animation: tots-fade 0.25s ease;
 }
 
+/* `display: grid` above would beat the UA's `[hidden] { display: none }`, so an
+   overlay parked with the `hidden` attribute would stay rendered — an empty,
+   full-screen, pointer-eating wall. */
+.tots-overlay[hidden] {
+  display: none;
+}
+
 .tots-panel {
   width: min(320px, 100%);
   padding: 26px 24px 22px;
