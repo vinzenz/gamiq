@@ -8,7 +8,7 @@ import {
   layoutDoors,
   NODE_STEP,
 } from './chapters.ts'
-import { avatarStart, totalStars, unlockedIndex } from './progress.ts'
+import { pendingCelebration, totalStars, unlockedIndex } from './progress.ts'
 
 /** Stand-in campaign with ids 1–7 (like the real LEVELS, keyed by id). */
 const campaign = [1, 2, 3, 4, 5, 6, 7].map((id) => ({ id }))
@@ -81,9 +81,10 @@ describe('alley progression', () => {
     equal(totalStars({}, campaign), 0)
   })
 
-  it('never starts the avatar ahead of the unlocked door', () => {
-    equal(avatarStart({ avatar: 9 }, 3, 7), 3)
-    equal(avatarStart({ avatar: 2 }, 3, 7), 2)
-    equal(avatarStart({ avatar: 0 }, 0, 7), 0)
+  it('celebrates only progress that is fresher than the last visit', () => {
+    equal(pendingCelebration({ celebrated: 9 }, 3, 7), undefined, 'stale spot never re-celebrates')
+    equal(pendingCelebration({ celebrated: 2 }, 3, 7), 3)
+    equal(pendingCelebration({ celebrated: 5 }, 2, 7), undefined)
+    equal(pendingCelebration({ celebrated: 0 }, 0, 7), undefined)
   })
 })

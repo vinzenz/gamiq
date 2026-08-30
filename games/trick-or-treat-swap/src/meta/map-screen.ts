@@ -15,9 +15,9 @@ import {
   layoutDoors,
 } from './chapters.ts'
 import {
-  avatarStart,
   earnedStars,
   normalizeMapState,
+  pendingCelebration,
   totalStars,
   unlockedIndex,
 } from './progress.ts'
@@ -26,13 +26,11 @@ import {
  * The alley map (ticket ToTS-ra73yg): one scrolling strip of door nodes on
  * both sides of a walking path, lampposts and drifting fog, split into themed
  * chapter segments with a boss house at every chapter's end. The kid avatar
- * stands at the next unplayed door; on a win he walks there door to door and
- * the door swings open with a candy burst. Tapping an unlocked door starts
- * the level; locked doors just rattle. Placeholder art — map strips arrive
- * with Assets II.
+ * always stands at the next unplayed door — reloads never replay a walk; when
+ * the previous session ended with fresh progress, the door swings open with a
+ * candy burst once, right where he stands.
  */
 
-const WALK_SPEED = 150
 const DOOR_OPEN_DUR = 0.5
 const CANDY_COUNT = 9
 
@@ -90,8 +88,8 @@ function ensureStyle(): void {
 
 const MAP_KEY = 'trick-or-treat-swap:map'
 
-function loadMapState(): { avatar: number } {
-  return normalizeMapState(loadJSON<unknown>(MAP_KEY, null)) ?? { avatar: 0 }
+function loadMapState(): { celebrated: number } {
+  return normalizeMapState(loadJSON<unknown>(MAP_KEY, null)) ?? { celebrated: 0 }
 }
 
 export function registerMetaScreens(): void {
@@ -113,14 +111,9 @@ class AlleyMapScreen implements Screen {
   readonly #stars: Record<string, number>
   #unlocked: number
   #avatarAt: number
-  /** Leg in progress: the node index we are walking away from. */
-  #walkingFrom: number | undefined
-  #walkT = 0
-  #walkDelay: number
-  /** Seconds since the kid arrived at the unlocked door; ≤ -1 = not yet. */
+  /** Seconds since the celebration (or mount); ≤ -1 = not yet played. */
   #arrival = -1
-  #departedAt: number | undefined
-  #facing = 1
+  #celebratePending = false
   #candy: Candy[] = []
   #shakes = new Map<number, number>()
   readonly #fx = new Fx()
@@ -135,9 +128,13 @@ class AlleyMapScreen implements Screen {
     ensureStyle()
     this.#stars = loadStars()
     this.#unlocked = unlockedIndex(this.#stars)
-    this.#avatarAt = avatarStart(loadMapState(), this.#unlocked, LEVELS.length)
-    this.#walkDelay = this.#avatarAt < this.#unlocked ? 0.55 : 0
-    if (this.#walkDelay === 0) this.#arrival = 9999
+    const mapState = loadMapState()
+    this.#avatarAt = this.#unlocked
+    // Claim the celebration up front so a reload mid-flourish never replays it.
+    this.#celebratePending =
+      pendingCelebration(mapState, this.#unlocked, LEVELS.length) !== undefined
+    this.#arrival = this.#celebratePending ? -1 : 9999
+    if (this.#celebratePending) saveJSON(MAP_KEY, { celebrated: this.#unlocked })
 
     const root = el('div', 'tots-map-root')
     this.element = root
@@ -193,11 +190,6 @@ class AlleyMapScreen implements Screen {
     }
     this.#updateCandy(dt)
 
-    if (this.#walkDelay > 0) {
-      this.#walkDelay -= dt
-      if (this.#walkDelay <= 0) this.#startWalk()
-    }
-    if (this.#walkingFrom !== undefined) this.#advanceWalk(dt)
     if (this.#arrival >= 0) this.#arrival += dt
 
     if (this.#follow) {
@@ -240,43 +232,20 @@ class AlleyMapScreen implements Screen {
     this.#camera = firstLayout
       ? this.#clampCamera(this.#avatarPos().y - height * 0.58)
       : this.#clampCamera(this.#camera)
+    if (firstLayout && this.#celebratePending) this.#celebrate()
   }
 
   dispose(): void {
     this.#stopPointers()
   }
 
-  // — Walk & arrival ———————————————————————————————————————————————————————
+  // — Arrival celebration —————————————————————————————————————————————————
 
-  #startWalk(): void {
-    this.#departedAt ??= this.#avatarAt
-    this.#walkingFrom = this.#avatarAt
-    this.#avatarAt += 1
-    this.#walkT = 0
-    this.#arrival = -1
-    sfx.select()
-  }
-
-  #advanceWalk(dt: number): void {
-    const from = this.#nodes[this.#walkingFrom ?? 0]
-    const to = this.#nodes[this.#avatarAt]
-    if (!from || !to) {
-      this.#walkingFrom = undefined
-      return
-    }
-    this.#facing = Math.sign(to.x - from.x) || this.#facing
-    this.#walkT += (dt * WALK_SPEED) / Math.max(1, Math.hypot(to.x - from.x, to.y - from.y))
-    if (this.#walkT < 1) return
-    this.#walkingFrom = undefined
-    if (this.#avatarAt < this.#unlocked) {
-      this.#startWalk()
-      return
-    }
-    this.#onArrival(to)
-  }
-
-  /** Door-open + candy moment at the freshly unlocked door. */
-  #onArrival(node: DoorNode): void {
+  /** Door-open + candy moment at the freshly unlocked door; no walking. */
+  #celebrate(): void {
+    this.#celebratePending = false
+    const node = this.#nodes[this.#unlocked]
+    if (!node) return
     this.#arrival = 0
     sfx.convert()
     const y = node.y - (node.boss ? 92 : 78)
@@ -296,17 +265,12 @@ class AlleyMapScreen implements Screen {
         age: 0,
       })
     }
-    saveJSON(MAP_KEY, { avatar: this.#avatarAt })
     this.#refreshHud()
   }
 
   #avatarPos(): { x: number; y: number } {
     const at = this.#nodes[this.#avatarAt]
-    const from = this.#walkingFrom !== undefined ? this.#nodes[this.#walkingFrom] : undefined
-    if (!at) return { x: 0, y: 0 }
-    if (!from) return { x: at.x, y: at.y }
-    const t = clamp01(this.#walkT)
-    return { x: from.x + (at.x - from.x) * t, y: from.y + (at.y - from.y) * t }
+    return at ? { x: at.x, y: at.y } : { x: 0, y: 0 }
   }
 
   /** 0 = closed … 1 = open, for the current door's swing-in animation. */
@@ -685,8 +649,8 @@ class AlleyMapScreen implements Screen {
       ctx.fillText('🔒', cx, dy + dh / 2)
     }
 
-    // Star row on the pavement below the door.
-    const pop = node.index === this.#departedAt && this.#arrival >= 0 ? this.#arrival : 99
+    // Star row on the pavement below the door; they pop in on a celebration.
+    const pop = node.index === this.#unlocked && this.#celebrating() ? this.#arrival : 99
     ctx.font = '17px system-ui, sans-serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -719,12 +683,16 @@ class AlleyMapScreen implements Screen {
     ctx.restore()
   }
 
+  /** True while the arrival celebration is still playing its first moments. */
+  #celebrating(): boolean {
+    return this.#celebratePending === false && this.#arrival >= 0 && this.#arrival < 1
+  }
+
   #drawAvatar(ctx: CanvasRenderingContext2D): void {
     if (this.#nodes.length === 0) return
     const p = this.#avatarPos()
-    const walking = this.#walkingFrom !== undefined
-    const bob = walking ? Math.sin(this.#time * 14) * 2.2 : Math.sin(this.#time * 2.4) * 1.2
-    const f = this.#facing
+    const bob = Math.sin(this.#time * 2.4) * 1.2
+    const f = 1
     ctx.save()
     ctx.fillStyle = 'rgb(0 0 0 / 0.3)'
     ctx.beginPath()
@@ -732,14 +700,8 @@ class AlleyMapScreen implements Screen {
     ctx.fill()
     // Feet.
     ctx.fillStyle = '#2a1c30'
-    if (walking) {
-      const step = Math.sin(this.#time * 14) * 2.5
-      ctx.fillRect(p.x - 6, p.y - 7 + step, 4, 7)
-      ctx.fillRect(p.x + 2, p.y - 7 - step, 4, 7)
-    } else {
-      ctx.fillRect(p.x - 6, p.y - 7, 4, 7)
-      ctx.fillRect(p.x + 2, p.y - 7, 4, 7)
-    }
+    ctx.fillRect(p.x - 6, p.y - 7, 4, 7)
+    ctx.fillRect(p.x + 2, p.y - 7, 4, 7)
     // Candy bag.
     ctx.fillStyle = '#7a5a36'
     roundRectPath(ctx, p.x - f * 13 - 4, p.y - 15 + bob, 9, 11, 2)

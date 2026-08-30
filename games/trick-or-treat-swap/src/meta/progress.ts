@@ -12,8 +12,9 @@ import { LEVELS } from '../levels/index.ts'
  *
  * This module is pure so the derivations stay unit-testable under
  * `node --test` (which cannot load `@gamiq/shared`); the map screen does the
- * storage I/O around it. The only extra state is where the kid avatar stands,
- * persisted alongside so the map walks him to the next door once per win.
+ * storage I/O around it. The only extra state is the door up to which the
+ * map has already celebrated arrivals, persisted so the celebration plays
+ * exactly once per win and reloads never replay it.
  */
 
 export function earnedStars(level: Pick<Level, 'id'>, stars: Record<string, number>): number {
@@ -39,20 +40,30 @@ export function totalStars(
 }
 
 export interface MapState {
-  /** Level index the kid is standing at. */
-  avatar: number
+  /** Level index up to which the map has already celebrated arrivals. */
+  celebrated: number
 }
 
-/** Validate a parsed storage payload; undefined when it is not a map state. */
+/** Validate a parsed storage payload; undefined when it is not a map state.
+ *  Legacy `{ avatar }` payloads migrate to `celebrated` so existing players
+ *  do not get a spurious celebration after updating. */
 export function normalizeMapState(value: unknown): MapState | undefined {
   if (typeof value !== 'object' || value === null) return undefined
-  const avatar = (value as { avatar?: unknown }).avatar
-  return typeof avatar === 'number' && Number.isInteger(avatar) && avatar >= 0
-    ? { avatar }
+  const raw = value as { celebrated?: unknown; avatar?: unknown }
+  const celebrated = raw.celebrated ?? raw.avatar
+  return typeof celebrated === 'number' && Number.isInteger(celebrated) && celebrated >= 0
+    ? { celebrated }
     : undefined
 }
 
-/** Where the kid starts: the remembered spot, never ahead of the unlocked door. */
-export function avatarStart(state: MapState, unlocked: number, levelCount: number): number {
-  return Math.min(Math.max(0, state.avatar), unlocked, levelCount - 1)
+/** The door that earned an arrival celebration, if progress is fresh — the
+ *  kid always stands at the unlocked door; this only decides whether the
+ *  door-open + candy moment still has to play. */
+export function pendingCelebration(
+  state: MapState,
+  unlocked: number,
+  levelCount: number,
+): number | undefined {
+  const target = Math.min(unlocked, levelCount - 1)
+  return unlocked > state.celebrated ? target : undefined
 }
