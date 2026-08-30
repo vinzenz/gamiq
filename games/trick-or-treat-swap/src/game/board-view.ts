@@ -1,7 +1,7 @@
 import type { ValidMove } from '../engine/board.ts'
 import type { Board, FallMove, Pos, SpawnedCell, Tile } from '../engine/types.ts'
 import { easeInQuad, easeOutQuad, roundRectPath } from './draw.ts'
-import { drawSprite, modifierSprite, powerupSprites, TILE_COLORS, tileSprites } from './sprites.ts'
+import { drawSprite, modifierSprite, powerupSprites, treatBagSprite, TILE_COLORS, tileSprites } from './sprites.ts'
 
 /**
  * Visual mirror of the engine board. The engine resolves a whole move before
@@ -269,10 +269,22 @@ export class BoardView {
           ctx.fillRect(px, py, cell, cell)
         }
         if (opts.deliverRow && y === this.#rows - 1) {
-          ctx.fillStyle = 'rgb(255 138 42 / 0.1)'
+          const lane = ctx.createLinearGradient(0, py, 0, py + cell)
+          lane.addColorStop(0, 'rgba(255, 138, 42, 0.05)')
+          lane.addColorStop(1, 'rgba(255, 168, 66, 0.32)')
+          ctx.fillStyle = lane
           ctx.fillRect(px, py, cell, cell)
         }
       }
+    }
+
+    // Basket lane: a treat-bag silhouette sits behind the bottom-row tiles —
+    // deliveries are tiles cleared on this row, so the goal needs a home.
+    if (opts.deliverRow) {
+      const bob = Math.sin(opts.time * 2.4) * 1.5
+      drawSprite(ctx, treatBagSprite, originX + w / 2, originY + h - cell * 0.42 + bob, cell * 1.3, {
+        alpha: 0.42,
+      })
     }
 
     // Under-modifiers, tiles, overlays — one layering pass per cell.
@@ -301,6 +313,21 @@ export class BoardView {
           drawSprite(ctx, modifierSprite(modifier ?? ''), c.x, c.y, cell * 0.98, { alpha: 0.96 })
         }
       }
+    }
+
+    // Glowing rim along the basket lane's bottom edge.
+    if (opts.deliverRow) {
+      const pulse = 0.55 + 0.25 * Math.sin(opts.time * 4)
+      ctx.save()
+      ctx.strokeStyle = `rgb(255 190 80 / ${pulse})`
+      ctx.shadowColor = 'rgb(255 190 80)'
+      ctx.shadowBlur = 9
+      ctx.lineWidth = 2.5
+      ctx.beginPath()
+      ctx.moveTo(originX + 5, originY + h - 2)
+      ctx.lineTo(originX + w - 5, originY + h - 2)
+      ctx.stroke()
+      ctx.restore()
     }
 
     // Match flash.

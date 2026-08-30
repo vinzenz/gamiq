@@ -11,6 +11,7 @@ import littleGhostUrl from '../../assets/sprites/power-little-ghost.webp'
 import bombUrl from '../../assets/sprites/power-pumpkin-bomb.webp'
 import batUrl from '../../assets/sprites/tile-bat.webp'
 import candyUrl from '../../assets/sprites/tile-candy.webp'
+import treatBagUrl from '../../assets/meta/treat-bag.webp'
 import ghostUrl from '../../assets/sprites/tile-ghost.webp'
 import potionUrl from '../../assets/sprites/tile-potion.webp'
 import pumpkinUrl from '../../assets/sprites/tile-pumpkin.webp'
@@ -51,6 +52,9 @@ export const tileSprites = {
   candy: loadImage(candyUrl),
   potion: loadImage(potionUrl),
 } satisfies Record<TileType, HTMLImageElement>
+
+/** Treat basket on the board's bottom row for deliver goals. */
+export const treatBagSprite = loadImage(treatBagUrl)
 
 export const powerupSprites: Record<PowerupKind, HTMLImageElement> = {
   broom: loadImage(broomUrl),
