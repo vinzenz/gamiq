@@ -4,11 +4,12 @@
   "type": "module",
   "title": "Trick or Treat Swap",
   "emoji": "🎃",
-  "description": "Halloween match-3: swap candies down a spooky alley, one door per level",
+  "description": "A Halloween match-3 down one spooky alley: swap treats, grow brooms, bombs, cauldrons and little ghosts into combos, crack ice, webs, slime and cages, and beat five monster houses across 40 doors — every won door earns your candy.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit && node --test \"src/**/*.test.ts\"",
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@gamiq/shared": "workspace:*"

@@ -1,5 +1,10 @@
 :root {
   color-scheme: dark;
+  /* Numeric safe-area insets for canvas layout (read via getComputedStyle). */
+  --tots-sat: env(safe-area-inset-top, 0px);
+  --tots-sab: env(safe-area-inset-bottom, 0px);
+  --tots-sal: env(safe-area-inset-left, 0px);
+  --tots-sar: env(safe-area-inset-right, 0px);
 }
 
 * {
@@ -32,6 +37,14 @@ body {
   display: block;
 }
 
+/* Screen DOM layer: transparent to touches except buttons and overlays. */
+#screens {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
 #fullscreen {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 10px);
@@ -52,4 +65,294 @@ body {
 
 #fullscreen:active {
   background: rgb(255 255 255 / 0.12);
+}
+
+/* — Play screen: HUD ——————————————————————————————————————————————— */
+
+.tots-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tots-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: calc(var(--tots-sat) + 10px) calc(var(--tots-sar) + 62px) 0 calc(var(--tots-sal) + 10px);
+}
+
+.tots-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.tots-icon-btn,
+.tots-icon-spacer {
+  width: 42px;
+  height: 42px;
+  flex: none;
+}
+
+.tots-icon-btn {
+  pointer-events: auto;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 10px;
+  background: rgb(11 14 20 / 0.55);
+  color: rgb(230 233 242 / 0.85);
+  font-size: 15px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.tots-icon-btn:active {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.tots-title {
+  text-align: center;
+  min-width: 0;
+}
+
+.tots-level-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(139 124 196 / 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tots-moves {
+  font-size: 13px;
+  color: rgb(230 233 242 / 0.75);
+}
+
+.tots-moves-count {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffd23f;
+}
+
+.tots-moves.tots-pulse .tots-moves-count {
+  animation: tots-pop 0.3s ease;
+}
+
+.tots-goals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tots-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 5px;
+  border: 1px solid rgb(139 124 196 / 0.45);
+  border-radius: 999px;
+  background: rgb(22 13 40 / 0.8);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tots-chip-img {
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+
+.tots-chip-emoji {
+  font-size: 18px;
+  line-height: 1;
+  padding-inline: 3px;
+}
+
+.tots-chip-deliver {
+  border-color: rgb(255 138 42 / 0.6);
+}
+
+.tots-chip-done {
+  border-color: rgb(94 232 148 / 0.8);
+  color: rgb(94 232 148);
+}
+
+.tots-chip.tots-pulse {
+  animation: tots-pop 0.3s ease;
+}
+
+@keyframes tots-pop {
+  40% {
+    transform: scale(1.15);
+  }
+}
+
+/* — Play screen: intro banner ————————————————————————————————————— */
+
+.tots-banner {
+  position: absolute;
+  top: 32%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  animation: tots-banner 2s ease forwards;
+}
+
+.tots-banner strong {
+  font-size: 30px;
+  color: #ffd23f;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.6);
+}
+
+.tots-banner span {
+  font-size: 15px;
+  color: rgb(230 233 242 / 0.8);
+}
+
+@keyframes tots-banner {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  15%,
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* — Play screen: overlays ———————————————————————————————————————— */
+
+.tots-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(11 14 20 / 0.62);
+  animation: tots-fade 0.25s ease;
+}
+
+.tots-panel {
+  width: min(320px, 100%);
+  padding: 26px 24px 22px;
+  border: 1px solid rgb(139 124 196 / 0.5);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #241543, #1a1033);
+  text-align: center;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.55);
+  animation: tots-panel-in 0.3s ease;
+}
+
+.tots-panel-title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.tots-panel-title.tots-win {
+  color: #ffd23f;
+}
+
+.tots-panel-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: rgb(230 233 242 / 0.7);
+}
+
+.tots-stars {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.tots-stars span {
+  color: rgb(255 255 255 / 0.14);
+}
+
+.tots-stars span.on {
+  color: #ffd23f;
+  text-shadow: 0 0 14px rgb(255 210 63 / 0.6);
+  animation: tots-star 0.45s ease backwards;
+}
+
+@keyframes tots-star {
+  0% {
+    transform: scale(0) rotate(-30deg);
+  }
+  70% {
+    transform: scale(1.25) rotate(6deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.tots-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.tots-btn {
+  pointer-events: auto;
+  padding: 12px 18px;
+  border: 1px solid rgb(139 124 196 / 0.5);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(230 233 242 / 0.9);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tots-btn:active {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.tots-btn.tots-primary {
+  border-color: rgb(255 138 42 / 0.7);
+  background: linear-gradient(180deg, #ff8a2a, #e06a10);
+  color: #241543;
+}
+
+.tots-btn.tots-primary:active {
+  background: linear-gradient(180deg, #ff9c4d, #ff8a2a);
+}
+
+@keyframes tots-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tots-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
 }
