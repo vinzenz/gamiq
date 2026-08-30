@@ -27,3 +27,20 @@ Pages (https://vinzenz.github.io/gamiq/) by `.github/workflows/deploy.yml` on pu
   orientation.
 - Node 24 (`.nvmrc`), pnpm 11, `engineStrict` is on. Latest stable versions of deps and
   GitHub Actions are preferred.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live in Rohrpost (`.rohrpost/`, git-native; `rp` CLI, display prefix `GQ`).
+See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles use their default label strings (`needs-triage`, `needs-info`,
+`ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Multi-context: root `CONTEXT-MAP.md` pointing at per-context `CONTEXT.md` files under
+`games/<slug>/` and `packages/`. See `docs/agents/domain.md`.

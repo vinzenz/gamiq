@@ -25,6 +25,19 @@ importers:
         specifier: ^8.2.2
         version: 8.2.2
 
+  games/trick-or-treat-swap:
+    dependencies:
+      '@gamiq/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.2.2
+        version: 8.2.2
+
   packages/shared:
     devDependencies:
       typescript:
