@@ -35,6 +35,11 @@ function loadImage(src: string): HTMLImageElement {
   return img
 }
 
+/** Load an arbitrary sprite url (e.g. a chapter's boss portrait). */
+export function loadSprite(src: string): HTMLImageElement {
+  return loadImage(src)
+}
+
 export const TILE_URLS: Record<TileType, string> = {
   pumpkin: pumpkinUrl,
   ghost: ghostUrl,

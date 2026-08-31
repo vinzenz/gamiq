@@ -157,9 +157,8 @@ ToTS-x40f2s — see `DIFFICULTY.md` for the per-level targets and solver stats.
 Chapter boundaries follow the concept (Maple Lane 1–7, Graveyard Path 8–13,
 Witch's Hollow 14–20, Pumpkin Patch 21–27, Cemetery Hill 28–34, Castle
 Dracula Alley 35–40 with boss houses at 7, 13, 20, 27, 34, 37 and 40);
-the alley map splits its segments every `LEVELS_PER_CHAPTER` doors
-(`src/meta/chapters.ts`), which does not match those boundaries — a meta-side
-knob, adjusted by the meta tickets, not by level data.
+the alley map (`src/meta/chapters.ts`) derives its segments from exactly
+those boss doors (`BOSS_DOOR_IDS`), so map boss houses and level data agree.
 
 `src/levels/index.ts` exports `LEVELS` in play order and `levelGame(n)`, which
 builds level n (0-based) as a `{ level, game, tracker }` bundle ready for the

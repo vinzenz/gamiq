@@ -127,11 +127,11 @@ line, `r` = decent-median ÷ budget. Chapters 1–2 measured for reference.
   play-screen territory and already fires on every board state the new levels
   produce (`findHint` is total — every level verified to have an opening move
   and reshuffles are engine-side). No change needed.
-- **Map knob handoff.** The alley map splits segments every
-  `LEVELS_PER_CHAPTER = 6` doors (`src/meta/chapters.ts`), while the concept
-  chapters run 7-6-7-7-7-6 with bosses at L7, L13, L20, L27, L34, L37 and L40.
-  No constant satisfies that shape; content bosses therefore don't all land on
-  map boss doors. Meta-side follow-up if the mismatch matters visually.
+- **Map knob handoff.** ~~The alley map splits segments every
+  `LEVELS_PER_CHAPTER = 6` doors while the concept chapters run 7-6-7-7-7-6.~~
+  Resolved: `src/meta/chapters.ts` now derives segments from the real boss
+  doors (`BOSS_DOOR_IDS = [7, 13, 20, 27, 34, 37, 40]`), so content bosses all
+  land on map boss houses.
 
 ## QA checklist
 

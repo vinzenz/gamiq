@@ -41,6 +41,8 @@ export interface BoardRenderOptions {
   selected: Pos | null
   hint: ValidMove | null
   deliverRow: boolean
+  /** Portrait + max hp for the level's boss cell (undefined = no boss). */
+  boss?: { sprite: HTMLImageElement; maxHp: number }
 }
 
 interface DyingTile {
@@ -253,7 +255,7 @@ export class BoardView {
         }
         ctx.fillStyle = (x + y) % 2 === 0 ? 'rgb(255 255 255 / 0.075)' : 'rgb(255 255 255 / 0.03)'
         ctx.fillRect(px, py, cell, cell)
-        if (modifier === 'boss') {
+        if (modifierRoot(modifier ?? '') === 'boss') {
           const glow = ctx.createRadialGradient(
             px + cell / 2,
             py + cell / 2,
@@ -294,6 +296,30 @@ export class BoardView {
         const modifier = this.#modifiers[i]
         const root = modifier ? modifierRoot(modifier) : ''
         const c = this.centerOf({ x, y })
+        if (root === 'boss') {
+          // The boss occupant: portrait hovers over its cell, with an hp bar
+          // driven by the `boss-<hp>` modifier the engine keeps updated.
+          const hp = Number(/^boss-(\d+)$/.exec(modifier ?? '')?.[1] ?? 0)
+          const bob = Math.sin(opts.time * 2.2) * cell * 0.04
+          drawSprite(ctx, opts.boss?.sprite, c.x, c.y + bob, cell * 0.98, {
+            fallback: '#3a2a55',
+          })
+          if (hp > 0 && opts.boss) {
+            const barW = cell * 0.8
+            const barH = Math.max(4, cell * 0.1)
+            const bx = c.x - barW / 2
+            const by = c.y + cell * 0.36
+            ctx.fillStyle = 'rgb(9 7 18 / 0.85)'
+            roundRectPath(ctx, bx, by, barW, barH, barH / 2)
+            ctx.fill()
+            const ratio = opts.boss.maxHp > 0 ? Math.min(1, hp / opts.boss.maxHp) : 0
+            if (ratio > 0) {
+              ctx.fillStyle = ratio > 0.4 ? '#ff8a2a' : '#ff5a5a'
+              roundRectPath(ctx, bx + 1, by + 1, Math.max(2, (barW - 2) * ratio), barH - 2, (barH - 2) / 2)
+              ctx.fill()
+            }
+          }
+        }
         if (root && TILELESS.has(root)) {
           drawSprite(ctx, modifierSprite(modifier ?? ''), c.x, c.y, cell * 0.94, {
             fallback: '#5a5f70',

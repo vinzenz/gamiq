@@ -6,13 +6,14 @@ import { areAdjacent, samePos } from '../engine/pos.ts'
 import type { GameEvent, Pos, SpawnedCell, TileType } from '../engine/types.ts'
 import { LEVELS, levelGame } from '../levels/index.ts'
 import { sfx } from './audio.ts'
+import { bossArtFor } from './boss-art.ts'
 import { BoardView, type FallTween } from './board-view.ts'
 import { easeInQuad } from './draw.ts'
 import { Fx } from './fx.ts'
 import { registerLegacyObstacleAliases, stripTilelessObstacleTiles } from './obstacle-aliases.ts'
 import { recordStars } from './progress.ts'
 import { registerScreen, type Screen, type ScreenHost } from './screens.ts'
-import { modifierSpriteUrl, POWERUP_LABELS, TILE_COLORS, TILE_URLS } from './sprites.ts'
+import { modifierSpriteUrl, POWERUP_LABELS, TILE_COLORS, TILE_URLS, loadSprite } from './sprites.ts'
 import { boardWorld } from './tutorial/core.ts'
 import { TutorialDirector } from './tutorial/director.ts'
 import { levelScripts } from './tutorial/scripts.ts'
@@ -141,6 +142,8 @@ class PlayScreen implements Screen {
   readonly #movesEl: HTMLElement
   readonly #chips: Chip[] = []
   readonly #hasDeliver: boolean
+  readonly #boss: { sprite: HTMLImageElement; maxHp: number } | undefined
+  readonly #bossArtUrl: string | undefined
 
   #goalHintTimer = 0
   #hintIndex = -1
@@ -164,6 +167,10 @@ class PlayScreen implements Screen {
     stripTilelessObstacleTiles(this.#bundle.game.board)
     this.#view = new BoardView(this.#bundle.game.board)
     this.#hasDeliver = this.#bundle.level.goals.some((g) => g.kind === 'deliver')
+    if (this.#bundle.level.boss) {
+      this.#bossArtUrl = bossArtFor(levelIndex)
+      this.#boss = { sprite: loadSprite(this.#bossArtUrl), maxHp: this.#bundle.level.boss.hp }
+    }
 
     const root = el('div', 'tots-root')
     this.element = root
@@ -231,6 +238,7 @@ class PlayScreen implements Screen {
       selected: this.#selected,
       hint: this.#hint,
       deliverRow: this.#hasDeliver,
+      boss: this.#boss,
     })
     this.#drawTutorialHighlight(ctx)
     this.#fx.render(ctx)
@@ -840,7 +848,12 @@ class PlayScreen implements Screen {
         arrow.setAttribute('aria-hidden', 'true')
       }
     } else {
-      const url = goal.kind === 'clear-modifier' ? modifierSpriteUrl(goal.modifier) : undefined
+      const url =
+        goal.kind === 'clear-modifier'
+          ? modifierSpriteUrl(goal.modifier)
+          : goal.kind === 'boss'
+            ? this.#bossArtUrl
+            : undefined
       const icon = el('span', 'tots-chip-emoji', chip)
       icon.textContent = url ? '' : '👹'
       if (url) {

@@ -1,12 +1,17 @@
 /**
- * Alley chapters (ticket ToTS-ra73yg). The single scrolling strip is split
- * into themed street segments of `LEVELS_PER_CHAPTER` doors each; every
- * chapter's final door is a boss house. Levels are appended over time, so
- * the span helpers take the level count explicitly and adapt: an unfinished
- * last chapter simply stays short.
+ * Alley chapters (ticket ToTS-ra73yg). The strip is split into themed street
+ * segments that each end in a boss house; the boundaries follow the actual
+ * level data (a level is a boss house iff it ships a boss goal), so segments
+ * have the lengths 7/6/7/7/7/6 for the shipped 40 levels. Castle Dracula
+ * Alley contains a mid-chapter boss (37) before the campaign finale (40).
  */
 
-export const LEVELS_PER_CHAPTER = 6
+/** 1-based ids of boss-house doors in play order. */
+const BOSS_DOOR_IDS: readonly number[] = [7, 13, 20, 27, 34, 37, 40]
+/** Final door of each chapter — the last six of those are also boss houses. */
+const CHAPTER_FINAL_IDS: readonly number[] = [7, 13, 20, 27, 34, 40]
+
+const bossDoorSet = new Set(BOSS_DOOR_IDS)
 
 export interface ChapterTheme {
   name: string
@@ -108,34 +113,46 @@ export interface ChapterSpan {
 }
 
 export function chapterCount(levelCount: number): number {
-  return Math.max(1, Math.ceil(levelCount / LEVELS_PER_CHAPTER))
+  return Math.max(
+    1,
+    CHAPTER_FINAL_IDS.filter((id) => id <= levelCount).length,
+  )
 }
 
 /** Chapter a level belongs to, clamped to the last defined theme. */
 export function chapterOf(levelIndex: number): number {
-  return Math.min(Math.floor(Math.max(0, levelIndex) / LEVELS_PER_CHAPTER), CHAPTERS.length - 1)
+  const id = levelIndex + 1
+  return Math.min(
+    Math.max(
+      0,
+      CHAPTER_FINAL_IDS.filter((final) => final < id).length,
+    ),
+    CHAPTERS.length - 1,
+  )
 }
 
 /** Level index ranges of each street segment, in strip order. */
 export function chapterSpans(levelCount: number): ChapterSpan[] {
   const spans: ChapterSpan[] = []
-  for (let first = 0; first < levelCount; first += LEVELS_PER_CHAPTER) {
+  let first = 0
+  while (first < levelCount) {
+    const chapter = chapterOf(first)
+    let last = first
+    while (last + 1 < levelCount && chapterOf(last + 1) === chapter) last++
     spans.push({
-      chapter: Math.min(spans.length, CHAPTERS.length - 1),
+      chapter: Math.min(chapter, CHAPTERS.length - 1),
       first,
-      last: Math.min(first + LEVELS_PER_CHAPTER, levelCount) - 1,
+      last,
     })
+    first = last + 1
   }
   return spans.length > 0 ? spans : [{ chapter: 0, first: 0, last: 0 }]
 }
 
-/** A chapter-final door: last of its segment or the campaign's last level. */
-export function isChapterFinal(levelIndex: number, levelCount: number): boolean {
-  const last = levelCount - 1
-  return (
-    levelIndex === last ||
-    (levelIndex % LEVELS_PER_CHAPTER === LEVELS_PER_CHAPTER - 1 && levelIndex < last)
-  )
+/** A boss-house door: chapter finals plus the castle's mid-chapter boss. */
+export function isBossHouse(levelIndex: number, levelCount: number): boolean {
+  const id = levelIndex + 1
+  return id >= 1 && id <= levelCount && bossDoorSet.has(id)
 }
 
 export interface DoorNode {
@@ -179,7 +196,7 @@ export function layoutDoors(
   const nodes: DoorNode[] = []
   let y = contentHeight - PAD_BOTTOM
   for (let index = 0; index < count; index++) {
-    const boss = isChapterFinal(index, count)
+    const boss = isBossHouse(index, count)
     const side = index % 2 === 0 ? 0.27 : 0.73
     nodes.push({
       index,
