@@ -141,6 +141,10 @@ class PlayScreen implements Screen {
   readonly #goalHint: HTMLElement
   readonly #movesEl: HTMLElement
   readonly #chips: Chip[] = []
+  /** Per-goal count the chips are currently displaying (leads the tracker
+   *  during a move so counters tick with the visible clears, then snaps back
+   *  to engine truth on settle). */
+  #displayed: number[] = []
   readonly #hasDeliver: boolean
   readonly #boss: { sprite: HTMLImageElement; maxHp: number } | undefined
   readonly #bossArtUrl: string | undefined
@@ -287,6 +291,18 @@ class PlayScreen implements Screen {
     for (let i = 0; i < events.length; i++) {
       const e = events[i]
       if (!e) continue
+      // Goal counters tick on the steps where the progress visually happens.
+      const bumps = this.#chipBumpsFor(e)
+      const wrap = (step: Step): Step => {
+        if (bumps.length === 0) return step
+        return {
+          ...step,
+          start: () => {
+            step.start?.()
+            for (const [goalIndex, delta] of bumps) this.#bumpChip(goalIndex, delta)
+          },
+        }
+      }
       switch (e.type) {
         case 'reject':
           this.#queue.push(this.#rejectStep(e.a, e.b))
@@ -305,13 +321,13 @@ class PlayScreen implements Screen {
           this.#queue.push(this.#convertStep(e))
           break
         case 'power-activate':
-          this.#queue.push(this.#activateStep(e, nextClear(events, i)))
+          this.#queue.push(wrap(this.#activateStep(e, nextClear(events, i))))
           break
         case 'combo':
           this.#queue.push(this.#comboStep(e.a.at, e.b.at))
           break
         case 'clear':
-          this.#queue.push(this.#clearStep(e, cascadeDepth))
+          this.#queue.push(wrap(this.#clearStep(e, cascadeDepth)))
           break
         case 'fall': {
           const next = events[i + 1]
@@ -327,7 +343,7 @@ class PlayScreen implements Screen {
           this.#queue.push(this.#fallStep([], e.cells))
           break
         case 'obstacle':
-          this.#queue.push(this.#obstacleStep(e))
+          this.#queue.push(wrap(this.#obstacleStep(e)))
           break
         case 'shuffle':
           this.#queue.push(this.#shuffleStep())
@@ -871,12 +887,59 @@ class PlayScreen implements Screen {
 
   #updateChips(): void {
     const progress = this.#bundle.tracker.progress
+    this.#displayed = progress.map((p) => p.current)
     this.#chips.forEach((chip, i) => {
       const p = progress[i]
       if (!p) return
       chip.count.textContent = `${p.current}/${p.target}`
       chip.chip.classList.toggle('tots-done', p.met)
     })
+  }
+
+  /** Tick a goal chip forward while its step is animating; clamped to the
+   *  tracker's target and snapped back to engine truth at settle. */
+  #bumpChip(goalIndex: number, delta: number): void {
+    const progress = this.#bundle.tracker.progress[goalIndex]
+    const chip = this.#chips[goalIndex]
+    if (!progress || !chip || delta <= 0) return
+    const next = Math.min((this.#displayed[goalIndex] ?? 0) + delta, progress.target)
+    if (next === this.#displayed[goalIndex]) return
+    this.#displayed[goalIndex] = next
+    chip.count.textContent = `${next}/${progress.target}`
+    chip.chip.classList.toggle('tots-done', next >= progress.target)
+    chip.chip.classList.remove('tots-pulse')
+    void chip.chip.offsetWidth
+    chip.chip.classList.add('tots-pulse')
+  }
+
+  /** Chip increments for an event, in goal order — mirrors GoalTracker's
+   *  counting rules so the displayed count lands exactly on truth at settle. */
+  #chipBumpsFor(e: GameEvent): [number, number][] {
+    const bumps: [number, number][] = []
+    if (e.type === 'clear') {
+      const bottomRow = this.#bundle.game.board.height - 1
+      this.#bundle.level.goals.forEach((goal, goalIndex) => {
+        if (goal.kind === 'collect') {
+          const n = e.cells.filter((c) => c.tile.type === goal.color).length
+          if (n > 0) bumps.push([goalIndex, n])
+        } else if (goal.kind === 'deliver') {
+          const n = e.cells.filter(
+            (c) => c.tile.type === goal.color && c.at.y === bottomRow,
+          ).length
+          if (n > 0) bumps.push([goalIndex, n])
+        }
+      })
+    } else if (e.type === 'obstacle') {
+      const root = modifierRoot(e.modifier)
+      this.#bundle.level.goals.forEach((goal, goalIndex) => {
+        if (goal.kind === 'clear-modifier' && e.action === 'destroy' && modifierRoot(goal.modifier) === root) {
+          bumps.push([goalIndex, 1])
+        } else if (goal.kind === 'boss' && root === 'boss') {
+          bumps.push([goalIndex, 1])
+        }
+      })
+    }
+    return bumps
   }
 
   #pulseChips(): void {
