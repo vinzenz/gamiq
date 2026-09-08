@@ -1,5 +1,23 @@
 # Assets — Trick or Treat Swap
 
+## House and road refresh, 2026-09-08
+
+Generated with the built-in imagegen tool. The map uses these WebP files.
+The house images are 320 × 320 pixels. The road texture is 256 × 256 pixels,
+shown at 42% scale in a repeating canvas pattern. Chapter scenes overlap by
+200 pixels and fade into the next scene. Each scene is drawn once per chapter;
+chapter names have no wooden panel.
+
+### Final prompts
+
+- `assets/meta/house-cottage-closed.webp`: Use case: stylized-concept. Asset type: transparent game map house sprite. Chunky cartoon Halloween game art, flat 2D vector-style illustration with soft shadows and thick rounded outlines, big readable silhouettes. Deep night palette: midnight indigo #1a1033, shadow plum #3b1f5e, moonlit lavender #8b7cc4; warm accents: pumpkin orange #ff8a2a, candy corn yellow #ffd23f, candle-lit warm glow highlights. Slight glossy sheen on candy-like objects. No photorealism, no harsh black outlines, no text baked into images. Primary request: Reimagine the level houses as a premium polished storybook Halloween cottage. One complete charming cottage, front-facing with a little visible roof depth, sweeping curved violet shingle roof, chimney, carved timber porch, rounded plum stone walls, glowing amber windows, CLOSED arched oak front door centered, small pumpkin lanterns and tiny mossy doorstep. Rich hand-painted material shading within clean rounded outlines, readable at 120 pixels. Square canvas, house fills 90 percent, fully framed. Truly transparent background, no backdrop, no text, no border, no floor tile.
+- `assets/meta/house-cottage-open.webp`: Use case: precise-object-edit. Asset type: transparent game map house sprite. Chunky cartoon Halloween game art, flat 2D vector-style illustration with soft shadows and thick rounded outlines, big readable silhouettes. Deep night palette: midnight indigo #1a1033, shadow plum #3b1f5e, moonlit lavender #8b7cc4; warm accents: pumpkin orange #ff8a2a, candy corn yellow #ffd23f, candle-lit warm glow highlights. Slight glossy sheen on candy-like objects. No photorealism, no harsh black outlines, no text baked into images. Edit target: reference cottage. Change only the central front door: open the wooden door inward to reveal warm golden light inside. Keep the entire house, roof, windows, pumpkins, steps, camera, proportions and exact framing unchanged. Preserve real transparent alpha background. No extra objects or text. Reference: the generated closed cottage. The edit returned a painted checkerboard. During WebP export, the original closed cottage alpha channel was copied to this image and inset by 8 source pixels to remove checkerboard edge pixels. Two further transparency edits failed and were discarded.
+- `assets/meta/road-cobblestone.webp`: Use case: stylized-concept. Asset type: seamless tileable road surface texture for a winding game map path. Chunky cartoon Halloween game art, flat 2D vector-style illustration with soft shadows and thick rounded outlines, big readable silhouettes. Deep night palette: midnight indigo #1a1033, shadow plum #3b1f5e, moonlit lavender #8b7cc4; warm accents: pumpkin orange #ff8a2a, candy corn yellow #ffd23f, candle-lit warm glow highlights. Slight glossy sheen on candy-like objects. No photorealism, no harsh black outlines, no text baked into images. Primary request: premium storybook cobblestone paving, top-down orthographic, edge-to-edge evenly sized irregular rounded lavender-grey stones, subtle violet crevices, softly bevelled worn surfaces, a few tiny moss flecks. Quiet restrained contrast so small characters remain readable. Uniform diffuse moonlight, no directional perspective, no road edges, no lane markings, no objects, no text, no vignette, no border. Seamless on all four sides. Square image.
+
+Validation: inspected the generated art and optimized house cutout. Live browser
+review was unavailable in this session.
+
+
 Per-game asset inventory for the Halloween swap-3. See `docs/assets.md` for the
 workflow (imagegen → downscale to 2× display size → WebP → import from
 `src/assets/**`). Board art (tiles, power-ups, obstacles, combo FX) is **done**

@@ -1,4 +1,13 @@
 import { loadJSON, saveJSON, trackPointers, unlockAudio } from '@gamiq/shared'
+import alleyCh1Url from '../../assets/meta/alley-ch1.webp'
+import alleyCh2Url from '../../assets/meta/alley-ch2.webp'
+import alleyCh3Url from '../../assets/meta/alley-ch3.webp'
+import alleyCh4Url from '../../assets/meta/alley-ch4.webp'
+import alleyCh5Url from '../../assets/meta/alley-ch5.webp'
+import alleyCh6Url from '../../assets/meta/alley-ch6.webp'
+import houseClosedUrl from '../../assets/meta/house-cottage-closed.webp'
+import houseOpenUrl from '../../assets/meta/house-cottage-open.webp'
+import roadUrl from '../../assets/meta/road-cobblestone.webp'
 import { sfx } from '../game/audio.ts'
 import { roundRectPath } from '../game/draw.ts'
 import { Fx } from '../game/fx.ts'
@@ -21,12 +30,6 @@ import {
   totalStars,
   unlockedIndex,
 } from './progress.ts'
-import alleyCh1Url from '../../assets/meta/alley-ch1.webp'
-import alleyCh2Url from '../../assets/meta/alley-ch2.webp'
-import alleyCh3Url from '../../assets/meta/alley-ch3.webp'
-import alleyCh4Url from '../../assets/meta/alley-ch4.webp'
-import alleyCh5Url from '../../assets/meta/alley-ch5.webp'
-import alleyCh6Url from '../../assets/meta/alley-ch6.webp'
 
 /**
  * The alley map (ticket ToTS-ra73yg): one scrolling strip of door nodes on
@@ -80,12 +83,15 @@ function loadImage(src: string): HTMLImageElement {
 function traceSmoothLine(ctx: CanvasRenderingContext2D, points: readonly Point[]): void {
   if (points.length < 2) return
   const n = points.length
-  ctx.moveTo(points[0].x, points[0].y)
+  const first = points[0]
+  if (!first) return
+  ctx.moveTo(first.x, first.y)
   for (let i = 0; i < n - 1; i++) {
     const p0 = points[Math.max(i - 1, 0)]
     const p1 = points[i]
     const p2 = points[i + 1]
     const p3 = points[Math.min(i + 2, n - 1)]
+    if (!p0 || !p1 || !p2 || !p3) continue
     const cp1x = p1.x + (p2.x - p0.x) / 6
     const cp1y = p1.y + (p2.y - p0.y) / 6
     const cp2x = p2.x - (p3.x - p1.x) / 6
@@ -106,8 +112,18 @@ function clamp01(t: number): number {
 
 const STYLE_ID = 'tots-map-style'
 const ROAD_ANCHOR = 46
-const CHAPTER_STRIP_URLS = [alleyCh1Url, alleyCh2Url, alleyCh3Url, alleyCh4Url, alleyCh5Url, alleyCh6Url]
+const CHAPTER_STRIP_URLS = [
+  alleyCh1Url,
+  alleyCh2Url,
+  alleyCh3Url,
+  alleyCh4Url,
+  alleyCh5Url,
+  alleyCh6Url,
+]
 const CHAPTER_STRIP_IMAGES = CHAPTER_STRIP_URLS.map(loadImage)
+const HOUSE_CLOSED = loadImage(houseClosedUrl)
+const HOUSE_OPEN = loadImage(houseOpenUrl)
+const ROAD_TEXTURE = loadImage(roadUrl)
 const ROAD_EDGE_COLOR = 'rgb(34 24 55 / 0.55)'
 const ROAD_SHADE_COLOR = 'rgb(20 12 32 / 0.45)'
 const ROAD_SKY_COLOR = 'rgb(255 238 220 / 0.08)'
@@ -147,6 +163,7 @@ export function registerMetaScreens(): void {
 class AlleyMapScreen implements Screen {
   readonly element: HTMLElement
   readonly #host: ScreenHost
+  readonly #stripCache = new Map<number, HTMLCanvasElement>()
   #width = 0
   #height = 0
   #nodes: DoorNode[] = []
@@ -336,7 +353,11 @@ class AlleyMapScreen implements Screen {
   #tap(x: number, y: number): void {
     const wy = y + this.#camera
     for (const node of this.#nodes) {
-      if (Math.hypot(node.x - x, node.y - 34 - wy) > 56) continue
+      const size = node.boss ? 150 : 120
+      const bottom = node.y - (node.boss ? 58 : 46) + 12
+      const onHouse = Math.abs(node.x - x) <= size / 2 && wy >= bottom - size && wy <= bottom
+      const onPath = Math.hypot(node.x - x, node.y - 10 - wy) <= 36
+      if (!onHouse && !onPath) continue
       if (node.index <= this.#unlocked) {
         sfx.select()
         this.#host.navigate('play', { level: node.index })
@@ -398,21 +419,25 @@ class AlleyMapScreen implements Screen {
   #drawBands(ctx: CanvasRenderingContext2D, width: number): void {
     for (const span of chapterSpans(LEVELS.length)) {
       const slice = this.#nodes.slice(span.first, span.last + 1)
-      const top = slice.reduce((min, n) => Math.min(min, n.y), Infinity) - 88
-      const bottom = slice.reduce((max, n) => Math.max(max, n.y), -Infinity) + 104
+      const first = slice[0]
+      const last = slice[slice.length - 1]
+      if (!first || !last) continue
+      const next = this.#nodes[span.last + 1]
+      const previous = this.#nodes[span.first - 1]
+      const top = next ? (last.y + next.y) / 2 - 100 : last.y - 240
+      const bottom = previous ? (first.y + previous.y) / 2 + 100 : first.y + 240
       const theme = themeFor(span.chapter)
       const strip = CHAPTER_STRIP_IMAGES[Math.min(span.chapter, CHAPTER_STRIP_IMAGES.length - 1)]
       const hasStrip = strip?.complete === true && strip.naturalWidth > 0
 
       if (strip && hasStrip) {
-        this.#drawStrip(ctx, strip, top, bottom, width)
+        this.#drawStrip(ctx, strip, top, bottom, width, span.chapter)
       } else {
         const gradient = ctx.createLinearGradient(0, top, 0, bottom)
         gradient.addColorStop(0, theme.groundTop)
         gradient.addColorStop(1, theme.groundBottom)
         ctx.fillStyle = gradient
-        roundRectPath(ctx, -6, top, width + 12, bottom - top, 26)
-        ctx.fill()
+        ctx.fillRect(-6, top, width + 12, bottom - top)
         this.#drawProps(ctx, theme, span.first, top, bottom, width)
       }
     }
@@ -490,30 +515,30 @@ class AlleyMapScreen implements Screen {
     top: number,
     bottom: number,
     width: number,
+    chapter: number,
   ): void {
-    const spanHeight = bottom - top
-    if (spanHeight <= 0 || !image.naturalWidth || !image.naturalHeight) return
-    const spanWidth = width + 12
-    const scale = spanWidth / image.naturalWidth
-    const frameHeight = image.naturalHeight * scale
-    const x = -6
-
-    ctx.save()
-    roundRectPath(ctx, x, top, spanWidth, spanHeight, 26)
-    ctx.clip()
-    if (frameHeight >= spanHeight) {
-      const sourceHeight = spanHeight / scale
-      const sourceY = Math.max(0, (image.naturalHeight - sourceHeight) / 2)
-      ctx.drawImage(image, 0, sourceY, image.naturalWidth, sourceHeight, x, top, spanWidth, spanHeight)
-    } else {
-      for (let y = top; y < bottom; y += frameHeight) {
-        const h = Math.min(frameHeight, bottom - y)
-        const sourceHeight = h / scale
-        if (sourceHeight <= 0) break
-        ctx.drawImage(image, 0, 0, image.naturalWidth, sourceHeight, x, y, spanWidth, h)
+    const height = Math.ceil(bottom - top)
+    const pixelWidth = Math.ceil(width)
+    let layer = this.#stripCache.get(chapter)
+    if (!layer || layer.width !== pixelWidth || layer.height !== height) {
+      layer = document.createElement('canvas')
+      layer.width = pixelWidth
+      layer.height = height
+      const paint = layer.getContext('2d')
+      if (!paint) return
+      // One scene per chapter. Repeating the strip creates visible horizon seams.
+      paint.drawImage(image, 0, 0, pixelWidth, height)
+      if (chapter > 0) {
+        paint.globalCompositeOperation = 'destination-in'
+        const fade = paint.createLinearGradient(0, height - 200, 0, height)
+        fade.addColorStop(0, '#fff')
+        fade.addColorStop(1, 'rgb(255 255 255 / 0)')
+        paint.fillStyle = fade
+        paint.fillRect(0, 0, pixelWidth, height)
       }
+      this.#stripCache.set(chapter, layer)
     }
-    ctx.restore()
+    ctx.drawImage(layer, 0, top)
   }
 
   #drawPath(ctx: CanvasRenderingContext2D): void {
@@ -522,14 +547,17 @@ class AlleyMapScreen implements Screen {
     ctx.lineJoin = 'round'
     ctx.lineCap = 'round'
 
-    const pathPoints: Point[] = []
-    if (this.#nodes.length > 0) {
-      pathPoints.push({ x: this.#nodes[0].x, y: this.#nodes[0].y + ROAD_ANCHOR })
-      for (const node of this.#nodes) pathPoints.push({ x: node.x, y: node.y })
-      const last = this.#nodes[this.#nodes.length - 1]
-      pathPoints.push({ x: last.x, y: last.y - ROAD_ANCHOR })
+    const first = this.#nodes[0]
+    const last = this.#nodes[this.#nodes.length - 1]
+    if (!first || !last) {
+      ctx.restore()
+      return
     }
-    if (pathPoints.length < 2) return
+    const pathPoints: Point[] = [
+      { x: first.x, y: first.y + ROAD_ANCHOR },
+      ...this.#nodes,
+      { x: last.x, y: last.y - ROAD_ANCHOR },
+    ]
 
     const baseW = clampRange(this.#width * 0.14, 36, 72)
     const route = themeFor(chapterOf(this.#unlocked))
@@ -551,19 +579,16 @@ class AlleyMapScreen implements Screen {
     ctx.beginPath()
     traceSmoothLine(ctx, pathPoints)
     ctx.stroke()
-    ctx.strokeStyle = route.path
-    ctx.lineWidth = clampRange(baseW - 12, 18, 54)
+    const paving =
+      ROAD_TEXTURE.complete && ROAD_TEXTURE.naturalWidth > 0
+        ? ctx.createPattern(ROAD_TEXTURE, 'repeat')
+        : null
+    if (paving) paving.setTransform(new DOMMatrix().scale(0.42))
+    ctx.strokeStyle = paving ?? route.path
+    ctx.lineWidth = baseW - 4
     ctx.beginPath()
     traceSmoothLine(ctx, pathPoints)
     ctx.stroke()
-    const dash = clampRange(this.#width * 0.06, 3, 7)
-    ctx.setLineDash([dash * 3, dash * 11])
-    ctx.strokeStyle = 'rgb(255 255 255 / 0.1)'
-    ctx.lineWidth = clampRange(baseW * 0.12, 3, 9)
-    ctx.beginPath()
-    traceSmoothLine(ctx, pathPoints)
-    ctx.stroke()
-    ctx.setLineDash([])
     ctx.restore()
   }
 
@@ -581,19 +606,16 @@ class AlleyMapScreen implements Screen {
           : prevNode
             ? (firstNode.y + prevNode.y) / 2 + 6
             : firstNode.y + 116
-      const label = `CH ${span.chapter + 1} · ${theme.name.toUpperCase()}`
-      ctx.font = 'bold 12px system-ui, sans-serif'
-      const w = ctx.measureText(label).width + 26
-      ctx.fillStyle = '#241708'
-      ctx.fillRect(width / 2 - 3, y + 10, 6, 16)
-      ctx.fillStyle = '#3d2a18'
-      roundRectPath(ctx, width / 2 - w / 2, y - 15, w, 30, 8)
-      ctx.fill()
-      ctx.strokeStyle = '#241708'
-      ctx.lineWidth = 2
-      ctx.stroke()
-      ctx.fillStyle = '#ffd9a0'
-      ctx.fillText(label, width / 2, y + 1)
+      ctx.save()
+      ctx.shadowColor = '#10091f'
+      ctx.shadowBlur = 8
+      ctx.font = '600 11px system-ui, sans-serif'
+      ctx.fillStyle = theme.accent
+      ctx.fillText(`CHAPTER ${span.chapter + 1}`, width / 2, y - 12)
+      ctx.font = 'bold 17px system-ui, sans-serif'
+      ctx.fillStyle = '#fff0d8'
+      ctx.fillText(theme.name, width / 2, y + 9)
+      ctx.restore()
     }
   }
 
@@ -654,91 +676,108 @@ class AlleyMapScreen implements Screen {
 
     if (locked) ctx.globalAlpha = 0.62
 
-    // Body + roof.
-    ctx.fillStyle = theme.house
-    roundRectPath(ctx, cx - w / 2, by - h, w, h, 8)
-    ctx.fill()
-    ctx.strokeStyle = 'rgb(0 0 0 / 0.35)'
-    ctx.lineWidth = 2
-    ctx.stroke()
-    ctx.fillStyle = theme.roof
-    ctx.beginPath()
-    ctx.moveTo(cx - w / 2 - 9, by - h)
-    ctx.lineTo(cx, by - h - roof)
-    ctx.lineTo(cx + w / 2 + 9, by - h)
-    ctx.closePath()
-    ctx.fill()
-    ctx.stroke()
-    if (node.boss) {
-      ctx.strokeStyle = theme.accent
+    const size = node.boss ? 150 : 120
+    const spriteTop = by - size + 12
+    if (HOUSE_CLOSED.complete && HOUSE_CLOSED.naturalWidth > 0) {
+      ctx.drawImage(HOUSE_CLOSED, cx - size / 2, spriteTop, size, size)
+      if (open > 0 && HOUSE_OPEN.complete && HOUSE_OPEN.naturalWidth > 0) {
+        ctx.globalAlpha = (locked ? 0.62 : 1) * open
+        ctx.drawImage(HOUSE_OPEN, cx - size / 2, spriteTop, size, size)
+      }
+    } else {
+      // Body + roof.
+      ctx.fillStyle = theme.house
+      roundRectPath(ctx, cx - w / 2, by - h, w, h, 8)
+      ctx.fill()
+      ctx.strokeStyle = 'rgb(0 0 0 / 0.35)'
       ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.moveTo(cx, by - h - roof)
-      ctx.lineTo(cx, by - h - roof - 12)
       ctx.stroke()
-      ctx.fillStyle = theme.accent
+      ctx.fillStyle = theme.roof
       ctx.beginPath()
-      ctx.moveTo(cx, by - h - roof - 12)
-      ctx.lineTo(cx + 12, by - h - roof - 8)
-      ctx.lineTo(cx, by - h - roof - 4)
+      ctx.moveTo(cx - w / 2 - 9, by - h)
+      ctx.lineTo(cx, by - h - roof)
+      ctx.lineTo(cx + w / 2 + 9, by - h)
       ctx.closePath()
       ctx.fill()
-    }
-
-    // Windows (lit on finished/next houses).
-    const lit = !locked
-    for (const side of [-1, 1]) {
-      const wx = cx + side * w * 0.27
-      const wy = by - h * 0.66
-      if (lit) {
-        ctx.save()
-        ctx.shadowColor = theme.windowGlow
-        ctx.shadowBlur = 10
-        ctx.fillStyle = theme.windowGlow
-      } else {
-        ctx.fillStyle = 'rgb(10 8 18 / 0.8)'
+      ctx.stroke()
+      if (node.boss) {
+        ctx.strokeStyle = theme.accent
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(cx, by - h - roof)
+        ctx.lineTo(cx, by - h - roof - 12)
+        ctx.stroke()
+        ctx.fillStyle = theme.accent
+        ctx.beginPath()
+        ctx.moveTo(cx, by - h - roof - 12)
+        ctx.lineTo(cx + 12, by - h - roof - 8)
+        ctx.lineTo(cx, by - h - roof - 4)
+        ctx.closePath()
+        ctx.fill()
       }
-      roundRectPath(ctx, wx - 6, wy - 7, 12, 14, 3)
-      ctx.fill()
-      if (lit) ctx.restore()
-    }
 
-    // Door: swings open toward a warm interior.
-    const dw = w * 0.34
-    const dh = h * 0.52
-    const dx = cx - dw / 2
-    const dy = by - dh
-    if (open > 0) {
-      const interior = ctx.createLinearGradient(0, dy, 0, by)
-      interior.addColorStop(0, '#ffdf8f')
-      interior.addColorStop(1, '#b3722f')
-      ctx.fillStyle = interior
-      roundRectPath(ctx, dx, dy, dw, dh, 6)
+      // Windows (lit on finished/next houses).
+      const lit = !locked
+      for (const side of [-1, 1]) {
+        const wx = cx + side * w * 0.27
+        const wy = by - h * 0.66
+        if (lit) {
+          ctx.save()
+          ctx.shadowColor = theme.windowGlow
+          ctx.shadowBlur = 10
+          ctx.fillStyle = theme.windowGlow
+        } else {
+          ctx.fillStyle = 'rgb(10 8 18 / 0.8)'
+        }
+        roundRectPath(ctx, wx - 6, wy - 7, 12, 14, 3)
+        ctx.fill()
+        if (lit) ctx.restore()
+      }
+
+      // Door: swings open toward a warm interior.
+      const dw = w * 0.34
+      const dh = h * 0.52
+      const dx = cx - dw / 2
+      const dy = by - dh
+      if (open > 0) {
+        const interior = ctx.createLinearGradient(0, dy, 0, by)
+        interior.addColorStop(0, '#ffdf8f')
+        interior.addColorStop(1, '#b3722f')
+        ctx.fillStyle = interior
+        roundRectPath(ctx, dx, dy, dw, dh, 6)
+        ctx.fill()
+        ctx.fillStyle = `rgb(255 213 110 / ${0.22 * open})`
+        ctx.beginPath()
+        ctx.ellipse(cx, by + 4, dw * 0.85, 7, 0, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      ctx.fillStyle = node.boss ? '#8c2f2f' : '#6b3f1d'
+      roundRectPath(ctx, dx, dy, Math.max(1, dw * (1 - open)), dh, 6)
       ctx.fill()
-      ctx.fillStyle = `rgb(255 213 110 / ${0.22 * open})`
-      ctx.beginPath()
-      ctx.ellipse(cx, by + 4, dw * 0.85, 7, 0, 0, Math.PI * 2)
-      ctx.fill()
-    }
-    ctx.fillStyle = node.boss ? '#8c2f2f' : '#6b3f1d'
-    roundRectPath(ctx, dx, dy, Math.max(1, dw * (1 - open)), dh, 6)
-    ctx.fill()
-    ctx.strokeStyle = 'rgb(0 0 0 / 0.4)'
-    ctx.lineWidth = 1.5
-    ctx.stroke()
-    if (open < 0.5) {
-      ctx.fillStyle = '#ffd23f'
-      ctx.beginPath()
-      ctx.arc(dx + dw * (1 - open) - 5, dy + dh / 2, 2, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.strokeStyle = 'rgb(0 0 0 / 0.4)'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+      if (open < 0.5) {
+        ctx.fillStyle = '#ffd23f'
+        ctx.beginPath()
+        ctx.arc(dx + dw * (1 - open) - 5, dy + dh / 2, 2, 0, Math.PI * 2)
+        ctx.fill()
+      }
     }
     ctx.globalAlpha = 1
+
+    if (node.boss) {
+      ctx.font = '20px system-ui, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillStyle = theme.accent
+      ctx.fillText('♛', cx, spriteTop - 4)
+    }
 
     if (locked) {
       ctx.font = '15px system-ui, sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('🔒', cx, dy + dh / 2)
+      ctx.fillText('🔒', cx, by - 22)
     }
 
     // Star row on the pavement below the door; they pop in on a celebration.
@@ -770,7 +809,7 @@ class AlleyMapScreen implements Screen {
       ctx.font = '15px system-ui, sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('▼', cx, by - h - roof - 16 + Math.sin(this.#time * 5) * 4)
+      ctx.fillText('▼', cx, spriteTop - 18 + Math.sin(this.#time * 5) * 4)
     }
     ctx.restore()
   }

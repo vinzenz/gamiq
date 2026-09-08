@@ -113,20 +113,14 @@ export interface ChapterSpan {
 }
 
 export function chapterCount(levelCount: number): number {
-  return Math.max(
-    1,
-    CHAPTER_FINAL_IDS.filter((id) => id <= levelCount).length,
-  )
+  return Math.max(1, CHAPTER_FINAL_IDS.filter((id) => id <= levelCount).length)
 }
 
 /** Chapter a level belongs to, clamped to the last defined theme. */
 export function chapterOf(levelIndex: number): number {
   const id = levelIndex + 1
   return Math.min(
-    Math.max(
-      0,
-      CHAPTER_FINAL_IDS.filter((final) => final < id).length,
-    ),
+    Math.max(0, CHAPTER_FINAL_IDS.filter((final) => final < id).length),
     CHAPTERS.length - 1,
   )
 }
@@ -168,7 +162,7 @@ export interface DoorNode {
 /** Vertical distance between door nodes, plus an extra gap between chapters. */
 export const NODE_STEP = 128
 export const CHAPTER_GAP = 74
-const PAD_TOP = 118
+const PAD_TOP = 238
 const PAD_BOTTOM = 116
 const JITTER = 12
 
