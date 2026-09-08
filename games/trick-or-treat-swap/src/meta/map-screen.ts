@@ -21,6 +21,12 @@ import {
   totalStars,
   unlockedIndex,
 } from './progress.ts'
+import alleyCh1Url from '../../assets/meta/alley-ch1.webp'
+import alleyCh2Url from '../../assets/meta/alley-ch2.webp'
+import alleyCh3Url from '../../assets/meta/alley-ch3.webp'
+import alleyCh4Url from '../../assets/meta/alley-ch4.webp'
+import alleyCh5Url from '../../assets/meta/alley-ch5.webp'
+import alleyCh6Url from '../../assets/meta/alley-ch6.webp'
 
 /**
  * The alley map (ticket ToTS-ra73yg): one scrolling strip of door nodes on
@@ -59,6 +65,35 @@ function frac(n: number): number {
   return n - Math.floor(n)
 }
 
+type Point = { x: number; y: number }
+
+function clampRange(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value))
+}
+
+function loadImage(src: string): HTMLImageElement {
+  const img = new Image()
+  img.src = src
+  return img
+}
+
+function traceSmoothLine(ctx: CanvasRenderingContext2D, points: readonly Point[]): void {
+  if (points.length < 2) return
+  const n = points.length
+  ctx.moveTo(points[0].x, points[0].y)
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = points[Math.max(i - 1, 0)]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = points[Math.min(i + 2, n - 1)]
+    const cp1x = p1.x + (p2.x - p0.x) / 6
+    const cp1y = p1.y + (p2.y - p0.y) / 6
+    const cp2x = p2.x - (p3.x - p1.x) / 6
+    const cp2y = p2.y - (p3.y - p1.y) / 6
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y)
+  }
+}
+
 function themeFor(chapter: number): ChapterTheme {
   const theme = CHAPTERS[Math.max(0, Math.min(chapter, CHAPTERS.length - 1))]
   if (!theme) throw new Error('no chapter themes defined')
@@ -70,6 +105,12 @@ function clamp01(t: number): number {
 }
 
 const STYLE_ID = 'tots-map-style'
+const ROAD_ANCHOR = 46
+const CHAPTER_STRIP_URLS = [alleyCh1Url, alleyCh2Url, alleyCh3Url, alleyCh4Url, alleyCh5Url, alleyCh6Url]
+const CHAPTER_STRIP_IMAGES = CHAPTER_STRIP_URLS.map(loadImage)
+const ROAD_EDGE_COLOR = 'rgb(34 24 55 / 0.55)'
+const ROAD_SHADE_COLOR = 'rgb(20 12 32 / 0.45)'
+const ROAD_SKY_COLOR = 'rgb(255 238 220 / 0.08)'
 
 function ensureStyle(): void {
   if (document.getElementById(STYLE_ID)) return
@@ -82,6 +123,12 @@ function ensureStyle(): void {
 .tots-map-stars{font-size:13px;font-weight:700;color:#ffd23f;border:1px solid rgb(139 124 196 / .45);border-radius:999px;background:rgb(22 13 40 / .8);padding:5px 12px;white-space:nowrap}
 .tots-map-continue{position:absolute;left:50%;bottom:calc(var(--tots-sab) + 14px);transform:translateX(-50%);pointer-events:auto;border:1px solid rgb(255 138 42 / .7);border-radius:14px;background:linear-gradient(180deg,#ff8a2a,#e06a10);color:#241543;font-size:16px;font-weight:700;padding:13px 22px;cursor:pointer;box-shadow:0 8px 24px rgb(0 0 0 / .45);animation:tots-map-bob 2.2s ease-in-out infinite}
 .tots-map-continue:active{background:linear-gradient(180deg,#ff9c4d,#ff8a2a)}
+@media (min-width: 768px){
+  .tots-map-top{padding:calc(var(--tots-sat) + 12px) calc(var(--tots-sar) + 72px) 0 calc(var(--tots-sal) + 14px)}
+  .tots-map-chapter{font-size:15px}
+  .tots-map-stars{font-size:14px}
+  .tots-map-continue{font-size:17px;padding:14px 24px}
+}
 @keyframes tots-map-bob{50%{transform:translateX(-50%) translateY(-3px)}}`
   document.head.append(style)
 }
@@ -347,20 +394,27 @@ class AlleyMapScreen implements Screen {
     }
   }
 
-  /** Themed backdrop band per chapter segment, with silhouette props. */
+  /** Themed backdrop band per chapter segment, with generated strip art first. */
   #drawBands(ctx: CanvasRenderingContext2D, width: number): void {
     for (const span of chapterSpans(LEVELS.length)) {
       const slice = this.#nodes.slice(span.first, span.last + 1)
       const top = slice.reduce((min, n) => Math.min(min, n.y), Infinity) - 88
       const bottom = slice.reduce((max, n) => Math.max(max, n.y), -Infinity) + 104
       const theme = themeFor(span.chapter)
-      const gradient = ctx.createLinearGradient(0, top, 0, bottom)
-      gradient.addColorStop(0, theme.groundTop)
-      gradient.addColorStop(1, theme.groundBottom)
-      ctx.fillStyle = gradient
-      roundRectPath(ctx, -6, top, width + 12, bottom - top, 26)
-      ctx.fill()
-      this.#drawProps(ctx, theme, span.first, top, bottom, width)
+      const strip = CHAPTER_STRIP_IMAGES[Math.min(span.chapter, CHAPTER_STRIP_IMAGES.length - 1)]
+      const hasStrip = strip?.complete === true && strip.naturalWidth > 0
+
+      if (strip && hasStrip) {
+        this.#drawStrip(ctx, strip, top, bottom, width)
+      } else {
+        const gradient = ctx.createLinearGradient(0, top, 0, bottom)
+        gradient.addColorStop(0, theme.groundTop)
+        gradient.addColorStop(1, theme.groundBottom)
+        ctx.fillStyle = gradient
+        roundRectPath(ctx, -6, top, width + 12, bottom - top, 26)
+        ctx.fill()
+        this.#drawProps(ctx, theme, span.first, top, bottom, width)
+      }
     }
   }
 
@@ -430,48 +484,86 @@ class AlleyMapScreen implements Screen {
     }
   }
 
+  #drawStrip(
+    ctx: CanvasRenderingContext2D,
+    image: HTMLImageElement,
+    top: number,
+    bottom: number,
+    width: number,
+  ): void {
+    const spanHeight = bottom - top
+    if (spanHeight <= 0 || !image.naturalWidth || !image.naturalHeight) return
+    const spanWidth = width + 12
+    const scale = spanWidth / image.naturalWidth
+    const frameHeight = image.naturalHeight * scale
+    const x = -6
+
+    ctx.save()
+    roundRectPath(ctx, x, top, spanWidth, spanHeight, 26)
+    ctx.clip()
+    if (frameHeight >= spanHeight) {
+      const sourceHeight = spanHeight / scale
+      const sourceY = Math.max(0, (image.naturalHeight - sourceHeight) / 2)
+      ctx.drawImage(image, 0, sourceY, image.naturalWidth, sourceHeight, x, top, spanWidth, spanHeight)
+    } else {
+      for (let y = top; y < bottom; y += frameHeight) {
+        const h = Math.min(frameHeight, bottom - y)
+        const sourceHeight = h / scale
+        if (sourceHeight <= 0) break
+        ctx.drawImage(image, 0, 0, image.naturalWidth, sourceHeight, x, y, spanWidth, h)
+      }
+    }
+    ctx.restore()
+  }
+
   #drawPath(ctx: CanvasRenderingContext2D): void {
     if (this.#nodes.length === 0) return
     ctx.save()
     ctx.lineJoin = 'round'
     ctx.lineCap = 'round'
-    const trace = () => {
-      ctx.beginPath()
-      const first = this.#nodes[0]
-      if (first) ctx.moveTo(first.x, first.y + 46)
-      for (const node of this.#nodes) ctx.lineTo(node.x, node.y)
+
+    const pathPoints: Point[] = []
+    if (this.#nodes.length > 0) {
+      pathPoints.push({ x: this.#nodes[0].x, y: this.#nodes[0].y + ROAD_ANCHOR })
+      for (const node of this.#nodes) pathPoints.push({ x: node.x, y: node.y })
       const last = this.#nodes[this.#nodes.length - 1]
-      if (last) ctx.lineTo(last.x, last.y - 46)
+      pathPoints.push({ x: last.x, y: last.y - ROAD_ANCHOR })
     }
-    ctx.strokeStyle = themeFor(chapterOf(this.#unlocked)).pathEdge
-    ctx.lineWidth = 42
-    trace()
+    if (pathPoints.length < 2) return
+
+    const baseW = clampRange(this.#width * 0.14, 36, 72)
+    const route = themeFor(chapterOf(this.#unlocked))
+    ctx.strokeStyle = ROAD_EDGE_COLOR
+    ctx.lineWidth = clampRange(baseW + 12, 46, 90)
+    ctx.shadowColor = 'rgb(0 0 0 / 0.35)'
+    ctx.shadowBlur = clampRange(baseW * 0.25, 9, 18)
+    ctx.beginPath()
+    traceSmoothLine(ctx, pathPoints)
     ctx.stroke()
-    ctx.strokeStyle = 'rgb(30 22 48 / 0.85)'
-    ctx.lineWidth = 34
-    trace()
+    ctx.shadowBlur = 0
+    ctx.strokeStyle = ROAD_SHADE_COLOR
+    ctx.lineWidth = clampRange(baseW + 6, 40, 80)
+    ctx.beginPath()
+    traceSmoothLine(ctx, pathPoints)
     ctx.stroke()
-    ctx.strokeStyle = 'rgb(255 255 255 / 0.10)'
-    ctx.lineWidth = 3
-    ctx.setLineDash([2, 24])
-    trace()
+    ctx.strokeStyle = ROAD_SKY_COLOR
+    ctx.lineWidth = baseW
+    ctx.beginPath()
+    traceSmoothLine(ctx, pathPoints)
+    ctx.stroke()
+    ctx.strokeStyle = route.path
+    ctx.lineWidth = clampRange(baseW - 12, 18, 54)
+    ctx.beginPath()
+    traceSmoothLine(ctx, pathPoints)
+    ctx.stroke()
+    const dash = clampRange(this.#width * 0.06, 3, 7)
+    ctx.setLineDash([dash * 3, dash * 11])
+    ctx.strokeStyle = 'rgb(255 255 255 / 0.1)'
+    ctx.lineWidth = clampRange(baseW * 0.12, 3, 9)
+    ctx.beginPath()
+    traceSmoothLine(ctx, pathPoints)
     ctx.stroke()
     ctx.setLineDash([])
-    // Chapter-coloured path tint under each segment.
-    for (const span of chapterSpans(LEVELS.length)) {
-      const slice = this.#nodes.slice(span.first, span.last + 1)
-      if (slice.length === 0) continue
-      ctx.strokeStyle = themeFor(span.chapter).path
-      ctx.lineWidth = 34
-      const head = slice[0]
-      const tail = slice[slice.length - 1]
-      if (!head || !tail) continue
-      ctx.beginPath()
-      ctx.moveTo(head.x, head.y + 46)
-      for (const node of slice) ctx.lineTo(node.x, node.y)
-      ctx.lineTo(tail.x, tail.y - 46)
-      ctx.stroke()
-    }
     ctx.restore()
   }
 

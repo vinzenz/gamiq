@@ -1,0 +1,10 @@
+Retro written to `docs/retros/let-s-record-the-first.md`.
+
+**Three findings that matter most**
+- **Verify never played the game**: the workflow's verify agent audited conventions and compile gates only, so a build with an unplayable level 1 shipped — the user found 7 defects across 6 messages (entries `72d931a0`…`41f38a9c`).
+- **130-call harness chase on bug report #1** (`72d931a0`→`0076eec6`): the chrome-agent skill is DOM-centric and had no canvas-game ground-truth pattern, so the agent pixel-classified, raced animations, and chased an RNG-clone bug in its own harness before landing on engine-replay + HUD-as-truth.
+- **Unowned seams in the ticket slicing**: repo-wide `pnpm check` raced sibling WIP (false A1 failure → skipped A2), boss art was generated but no ticket owned wiring it (black square), and `chapters.ts`/test-glob drift shipped — plus the git bar was decided silently and challenged by the user (`b6a83c3a`).
+
+**Proposal counts**: 1 skill-create (`multi-agent-builds`), 2 skill-update (chrome-agent-testing canvas/serving sections; rohrpost JSON/prefix note), 2 rule-update (tap-rush template test glob; commit policy line in AGENTS.md), 1 acknowledge (research-skill trigger miss). Full before/after text for the skill-create and skill-updates is in the retro.
+
+**Couldn't decide without you**: the default commit model for future orchestrated builds — per-ticket commits between waves (requires per-agent worktrees) vs. the current leave-uncommitted-for-one-review-commit model. Left as the retro's only question.

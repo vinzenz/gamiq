@@ -15,6 +15,12 @@ Pages (https://vinzenz.github.io/gamiq/) by `.github/workflows/deploy.yml` on pu
 ## Conventions
 
 - One Vite app per game in `games/<slug>/`; the slug is the URL path (`/gamiq/<slug>/`).
+- Prefer logically split commits (engine/screens/levels/assets); agents never commit or push
+  unless the user asks; a bar on committing (e.g. during multi-agent builds) is a policy
+  decision to state in the launch plan, not to make silently. Multi-agent builds default to
+  committing **between waves** — one commit per completed wave, split per ticket where file
+  scopes allow — so changes stay small and reviewable (never mid-wave: concurrent git runs
+  race the index lock and capture sibling WIP).
 - Game art is generated with the `imagegen` tool — follow `docs/assets.md` (style blocks,
   transparent sprites, WebP + 2× sizing budgets, per-game `ASSETS.md`).
 - `games/tap-rush` is both the demo game and the scaffold template — keep it working.

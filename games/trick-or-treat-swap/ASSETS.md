@@ -19,6 +19,65 @@ palette: midnight indigo `#1a1033`, shadow plum `#3b1f5e`, moonlit lavender
 candle-lit warm glow highlights. Slight glossy sheen on candy-like objects.
 No photorealism, no harsh black outlines, no text baked into images.
 
+## Reimagine pack: smooth mobile-first road + map strip pass (v2)
+
+Use this pack when generating a visual refresh. Keep the style block above plus these
+constraints for every call:
+
+- Same 16-bit cartoon feel, thick rounded shapes, glossy candy material, no extra text.
+- Use vertical/portrait framing for path scenes.
+- Keep subject fully framed with ~10% safe margin.
+- Export with transparent alpha for character/sprite rows.
+
+### Board and road scene renders
+
+Use case: `stylized-concept`
+
+| File | Primary request (new prompt) | Reference |
+| --- | --- | --- |
+| `assets/sprites/tile-pumpkin.webp` | `Prompt: Cute jack-o-lantern tile icon, centered, round pumpkin body, curled green stem, carved happy face lit warm yellow, soft glossy finish, thick rounded outlines, gentle curved bevel, clean 2D game-art style. High local contrast, smooth shading, no hard shadows.` | Use current file as style anchor |
+| `assets/sprites/tile-ghost.webp` | `Prompt: Friendly ghost tile icon, chubby, round head, wavy bottom silhouette, two dark pupil eyes, small playful fangs, subtle blue candy-light aura, thick rounded outlines. Keep palette dark indigo/candle glow only, smooth and cute.` | tile-pumpkin |
+| `assets/sprites/tile-skull.webp` | `Prompt: Cute skull tile icon, soft bone-white with dark-cavity eyes, small warm-yellow smile glow, rounded cheek lines, thick rounded outlines, candy-game style, glossy finish, center-framed, no gore.` | tile-pumpkin |
+| `assets/sprites/tile-bat.webp` | `Prompt: Friendly purple bat tile icon, broad rounded wings, compact and chubby body, cute face with tiny rounded fangs, strong color contrast and clean edges, halloween candy palette, glossy paper-like surface, centered.` | tile-pumpkin |
+| `assets/sprites/tile-candy.webp` | `Prompt: Wrapped pink candy bonbon tile icon, twisted wrapper ends, glossy candy skin, small sugar sparkles, warm highlight, thick rounded outline, playful, centered character, no text.` | tile-pumpkin |
+| `assets/sprites/tile-potion.webp` | `Prompt: Round potion tile icon, clear glass bottle, cork stopper, glowing green brew with tiny bubbles, tiny candy bubbles around rim, thick outlines, soft highlights, cute spooky cartoon, centered.` | tile-pumpkin |
+| `assets/sprites/power-broom.webp` | `Prompt: Cartoon witch broom power tile icon, diagonal composition, sweet carved spiral handle cap, candy-corn yellow straw tied with plum ribbon, gentle sparkle trail, glossy wood texture, thick outlines, clean edges.` | tile-pumpkin |
+| `assets/sprites/power-pumpkin-bomb.webp` | `Prompt: Angry pumpkin bomb tile icon, bold round jack-o-lantern face, candy-plum fuse collar, lit spark core, warning glow aura, glossy candy-shell, centered object, thick line art and soft shading.` | tile-pumpkin |
+| `assets/sprites/power-cauldron.webp` | `Prompt: Round round-plum cauldron power icon, three curved legs, iridescent brew spilling from rim, bright steam wisps, candy spark particles, cute rounded edges, polished 2D cartoon finish.` | tile-pumpkin |
+| `assets/sprites/power-little-ghost.webp` | `Prompt: Tiny round ghost helper icon, plum wizard hat with candy-corn star, tiny hand holding candy sparkle, cute smile, smooth candy-gloss surfaces, thick rounded outlines, centered for sprite use.` | tile-ghost |
+| `assets/sprites/obstacle-cobweb-1.webp` | `Prompt: Subtle spooky cobweb sprite, single-layer square web overlay, pale silk threads, open gaps, soft dew sparkle points, no hard edges, thick rounded frame, centered.` | tile-pumpkin |
+| `assets/sprites/obstacle-cobweb-2.webp` | `Prompt: Cobweb sprite, layer 2 variant, denser thread network, extra rings, corner wisps, open gaps kept for readability, soft white glow, same style and line width as cobweb-1.` | obstacle-cobweb-1 |
+| `assets/sprites/obstacle-cobweb-3.webp` | `Prompt: Cobweb sprite, layer 3 dense and tangled variant, three-thread complexity, puffy strands, few gaps only, corner cocoons, same style, color and contrast as cobweb-2.` | obstacle-cobweb-2 |
+| `assets/sprites/obstacle-gravestone.webp` | `Prompt: Cute gravestone obstacle icon, rounded-top stone, engraved crescent moon, tiny base grass tufts, soft cracks and chips, no texture noise, thick clean outlines, centered object, candy game art.` | tile-pumpkin |
+| `assets/sprites/obstacle-ice.webp` | `Prompt: Translucent cursed ice cube obstacle icon, frost borders, glowing internal cracks, suspended sparkle ice shards, soft blue lighting, glossy edge, thick rounded edges, centered sprite. Keep transparent background.` | tile-pumpkin |
+| `assets/sprites/obstacle-lock.webp` | `Prompt: Birdcage lock obstacle icon, openwork dome, bar gaps visible, shiny golden padlock with front keyhole, magical lock bolts, clean 2D cartoon style, rounded geometry, centered.` | tile-pumpkin |
+| `assets/sprites/obstacle-slime.webp` | `Prompt: Gooey yellow-green cursed slime obstacle icon, rounded drips, bubbly surface, sickly glow, glossy wet texture, rounded edges, centered, thick outline style.` | tile-potion |
+
+### World strip and character prompts
+
+Use case: `illustration-story`
+
+| File | Primary request (new prompt) | Reference |
+| --- | --- | --- |
+| `assets/meta/alley-ch1.webp` | `Prompt: Smooth flowing alley scene, cozy suburban Halloween street at night, path in center with soft perspective, cute houses both sides, picket fences, full moon, thin mist, dark rounded shapes, calm atmosphere, clean candy-game style.` | Style block |
+| `assets/meta/alley-ch2.webp` | `Prompt: Smooth flowing graveyard street scene, grave tops and mossy crosses hugging road edges, gentle curved path center, cool blue moonlight, drifting fog ribbons, low contrast textures, rounded cartoon look.` | alley-ch1 |
+| `assets/meta/alley-ch3.webp` | `Prompt: Smooth flowing witch forest alley, dark trees and hanging moss on both sides, glowing green witch-fire wisps near corners, path in calm center column, gentle perspective curve, cute spooky cartoon style, no harsh contrast.` | alley-ch1 |
+| `assets/meta/alley-ch4.webp` | `Prompt: Smooth flowing pumpkin patch road, low fence lines and carved lantern pumpkins along edges, warm orange ambient glow, gentle hills in path background, no hard perspective jumps, rounded playful silhouette forms, halloween candy palette.` | alley-ch1 |
+| `assets/meta/alley-ch5.webp` | `Prompt: Smooth flowing cemetery path, grave mounds on side edges, chapel top in distance, huge low moon, mist in lower valley, path center calm and curved, child-friendly spooky cartoon style.` | alley-ch1 |
+| `assets/meta/alley-ch6.webp` | `Prompt: Smooth flowing castle alley, gothic gates and roof silhouettes on edges, dead bushes, bats above edge path, red-moon hue accents, calm central road lane, rounded cartoon proportions, premium 2D art, no noise artifacts.` | alley-ch1 |
+| `assets/meta/door-closed.webp` | `Prompt: Cute suburban Halloween house front, closed front door, pumpkin doorstep, warm lit windows, dark slate roof, soft ground shadow, clean rounded corners. Keep same style and color system.` | alley-ch1 |
+| `assets/meta/door-open.webp` | `Prompt: Same house as closed door asset, exactly same framing and materials, front door open wide with candle-lit interior glow spilling outward, warm candy-gold spill, same proportions and palette, only change is open door state.` | door-closed |
+| `assets/meta/treat-bag.webp` | `Prompt: Friendly brown paper candy bag icon, rolled rim, top tied, overflowing with wrapped candy and candy-corn, warm glow and floating sparkles, cute rounded paper folds, transparent background.` | tile-candy |
+| `assets/meta/kid-idle.webp` | `Prompt: Chubby kid character in pumpkin costume, friendly wide face, green stem cap, striped socks, brown treat bag in one hand, full-body framed at chest-to-feet, soft shading, rounded cartoon style, transparent background.` | tile-pumpkin |
+| `assets/meta/kid-walk.webp` | `Prompt: Same kid as kid-idle, exact face, stem and costume same, mid-stride step pose, one hand raised with candy bag, smooth motion bounce, transparent background, keep style exactly identical.` | kid-idle |
+| `assets/meta/kid-win.webp` | `Prompt: Same kid as kid-idle, exact proportions and costume, victory cheer pose, both arms up, candy bag lifted high, sparkles and candy bits around, transparent background.` | kid-idle |
+| `assets/meta/boss-vampire.webp` | `Prompt: Friendly spooky vampire boss portrait in pumpkin district, purple cloak and red-lined collar, greedy but cute smile, dark purple skin tone, glowing eyes, head-and-shoulder framing, centered bust, thick rounded line style.` | tile-pumpkin |
+| `assets/meta/boss-werewolf.webp` | `Prompt: Cute gremlin-like werewolf boss portrait, grey-brown fur, fanged snout, torn plum shirt, greedy narrowed eyes, same painterly cartoon treatment as boss-vampire, centered bust.` | boss-vampire |
+| `assets/meta/boss-skeleton.webp` | `Prompt: Cute stitched skeleton boss portrait, tattered purple hood, warm eye-glow, strong jawline and toothy grin, clean vector-cartoon edges, same lighting and palette as boss-werewolf.` | boss-vampire |
+| `assets/meta/boss-witch.webp` | `Prompt: Friendly witch boss portrait, green skin, crooked plum hat, candy-corn buckle, spectacles with reflections, soft grin and gap teeth, same composition as other boss portraits.` | boss-vampire |
+| `assets/meta/boss-scarecrow.webp` | `Prompt: Cute stitched scarecrow boss portrait, ragged burlap body, straw tufts, crow on shoulder, warm scarf, same format as other boss portraits, rounded corners, no photorealism.` | boss-vampire |
+| `assets/meta/boss-mummy.webp` | `Prompt: Friendly mummy boss portrait, sage bandages with loose edge, glowing gold eye, same head-and-shoulder style and warm candle contrast as other bosses, clean cartoon look.` | boss-vampire |
+
 ## Sprite guidelines
 
 - Tiles and power-ups: generate at `1024x1024`, `background: "transparent"`,
