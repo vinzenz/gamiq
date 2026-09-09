@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L3 — Broom Closet: match-4 lesson. A five-colour board keeps runs common
@@ -12,10 +12,10 @@ export const level3 = {
   seed: 20263,
   moves: 10,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   goals: [
-    { kind: 'collect', color: 'skull', count: 14 },
-    { kind: 'collect', color: 'bat', count: 14 },
+    { kind: 'collect', color: 'ivory', count: 14 },
+    { kind: 'collect', color: 'purple', count: 14 },
   ],
   starThresholds: [2, 5],
 } satisfies RawLevel

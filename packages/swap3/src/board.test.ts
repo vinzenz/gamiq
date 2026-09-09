@@ -44,16 +44,16 @@ describe('createBoard', () => {
 describe('applyGravity', () => {
   it('compacts tiles downwards per column', () => {
     const board = boardFromRows(['ab.c', '.b..', '....', 'c..a'], {
-      a: 'pumpkin',
-      b: 'ghost',
-      c: 'skull',
+      a: 'red',
+      b: 'blue',
+      c: 'ivory',
     })
     const moves = applyGravity(board)
     deepStrictEqual(typeMatrix(board), [
       [undefined, undefined, undefined, undefined],
       [undefined, undefined, undefined, undefined],
-      ['pumpkin', 'ghost', undefined, 'skull'],
-      ['skull', 'ghost', undefined, 'pumpkin'],
+      ['red', 'blue', undefined, 'ivory'],
+      ['ivory', 'blue', undefined, 'red'],
     ])
     ok(moves.length > 0)
     ok(moves.every((m) => m.to.y > m.from.y))
@@ -63,18 +63,18 @@ describe('applyGravity', () => {
     registerCellModifier({ id: 'test-wall', gravityBarrier: true })
     try {
       const board = boardFromRows(['a.a', '.b.', 'W..', '...'], {
-        a: 'pumpkin',
-        b: 'ghost',
-        W: 'bat',
+        a: 'red',
+        b: 'blue',
+        W: 'purple',
       })
       requireCell(board, { x: 0, y: 2 }).modifier = 'test-wall'
       const moves = applyGravity(board)
       const types = typeMatrix(board)
       strictEqual(types[0]?.[0], undefined)
-      strictEqual(types[1]?.[0], 'pumpkin') // stacks on top of the barrier
-      strictEqual(types[2]?.[0], 'bat') // barrier tile stays put
-      strictEqual(types[3]?.[1], 'ghost')
-      strictEqual(types[3]?.[2], 'pumpkin')
+      strictEqual(types[1]?.[0], 'red') // stacks on top of the barrier
+      strictEqual(types[2]?.[0], 'purple') // barrier tile stays put
+      strictEqual(types[3]?.[1], 'blue')
+      strictEqual(types[3]?.[2], 'red')
       ok(!moves.some((m) => m.from.y === 2 && m.from.x === 0))
       ok(moves.some((m) => m.from.x === 1 && m.to.y === 3))
     } finally {
@@ -143,12 +143,12 @@ function shiftPatternBoard(): Board {
     rows.push(row)
   }
   return boardFromRows(rows, {
-    a: 'pumpkin',
-    b: 'ghost',
-    c: 'skull',
-    d: 'bat',
-    e: 'candy',
-    f: 'potion',
+    a: 'red',
+    b: 'blue',
+    c: 'ivory',
+    d: 'purple',
+    e: 'pink',
+    f: 'green',
   })
 }
 

@@ -1,10 +1,10 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L11 — Fog Between Graves: the full chapter-2 mix on six colours. Layered
  * webs need repeat hits, stones sit next to webs so neither is trivially
  * reached, and two fat colour goals keep every clear counting. The level
- * where the little-ghost combos taught by the tutorial (ghost + ghost,
+ * where the homing combos taught by the tutorial (ghost + ghost,
  * ghost + bomb) earn their keep.
  */
 export const level11 = {
@@ -22,18 +22,18 @@ export const level11 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2, green: 2 },
   obstacles: [
-    { x: 1, y: 2, modifier: 'cobweb-2' },
-    { x: 6, y: 2, modifier: 'cobweb-2' },
-    { x: 3, y: 3, modifier: 'cobweb-1' },
-    { x: 4, y: 3, modifier: 'cobweb-1' },
-    { x: 2, y: 5, modifier: 'gravestone-1' },
-    { x: 5, y: 5, modifier: 'gravestone-1' },
+    { x: 1, y: 2, modifier: 'cover-2' },
+    { x: 6, y: 2, modifier: 'cover-2' },
+    { x: 3, y: 3, modifier: 'cover-1' },
+    { x: 4, y: 3, modifier: 'cover-1' },
+    { x: 2, y: 5, modifier: 'blocker-1' },
+    { x: 5, y: 5, modifier: 'blocker-1' },
   ],
   goals: [
-    { kind: 'collect', color: 'potion', count: 15 },
-    { kind: 'collect', color: 'skull', count: 15 },
+    { kind: 'collect', color: 'green', count: 15 },
+    { kind: 'collect', color: 'ivory', count: 15 },
   ],
   starThresholds: [1, 11],
 } satisfies RawLevel

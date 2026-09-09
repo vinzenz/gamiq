@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L38 — Tower Steps: the breather between the castle's two boss houses.
@@ -21,14 +21,14 @@ export const level38 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, candy: 3, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, pink: 3, green: 2 },
   obstacles: [
     { x: 2, y: 2, modifier: 'lock' },
     { x: 5, y: 4, modifier: 'lock' },
   ],
   goals: [
-    { kind: 'deliver', color: 'candy', count: 1 },
-    { kind: 'collect', color: 'potion', count: 8 },
+    { kind: 'deliver', color: 'pink', count: 1 },
+    { kind: 'collect', color: 'green', count: 8 },
   ],
   starThresholds: [20, 21],
 } satisfies RawLevel

@@ -47,7 +47,7 @@ export const sfx = {
       tri(note * (0.98 + Math.random() * 0.04), 0.08, i * 0.045, 0.06)
     })
   },
-  ghost: () => {
+  blue: () => {
     tri(760, 0.1, 0, 0.07)
     tri(980, 0.14, 0.09, 0.07)
   },

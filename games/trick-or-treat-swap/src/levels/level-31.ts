@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L31 — The Last Wreath: the hill's delivery run. Four frozen tiles sit
@@ -21,7 +21,7 @@ export const level31 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, candy: 3, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, pink: 3, green: 2 },
   obstacles: [
     { x: 3, y: 4, modifier: 'ice' },
     { x: 4, y: 4, modifier: 'ice' },
@@ -29,8 +29,8 @@ export const level31 = {
     { x: 6, y: 5, modifier: 'ice' },
   ],
   goals: [
-    { kind: 'deliver', color: 'candy', count: 3 },
-    { kind: 'collect', color: 'skull', count: 14 },
+    { kind: 'deliver', color: 'pink', count: 3 },
+    { kind: 'collect', color: 'ivory', count: 14 },
   ],
   starThresholds: [14, 22],
 } satisfies RawLevel

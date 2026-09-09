@@ -1,9 +1,9 @@
 import { ok, strictEqual } from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { makeTile, requireCell } from '../../engine/board.ts'
-import { boardFromRows, FIXTURE_PALETTE } from '../../engine/board-strings.ts'
-import type { Board, GameEvent, Pos, PowerupKind } from '../../engine/types.ts'
-import { POWERUPS } from '../../engine/types.ts'
+import { makeTile, requireCell } from '@gamiq/swap3/board'
+import { boardFromRows, FIXTURE_PALETTE } from '@gamiq/swap3/board-strings'
+import type { Board, GameEvent, Pos, PowerupKind } from '@gamiq/swap3/types'
+import { POWERUPS } from '@gamiq/swap3/types'
 import { LEVELS, levelGame } from '../../levels/index.ts'
 import { boardWorld, TutorialCore, type TutorialHost, type TutorialWorld } from './core.ts'
 import { levelScripts } from './scripts.ts'
@@ -68,9 +68,9 @@ const script = (id: string, steps: readonly TutorialStep[]): TutorialScript => (
 const convert = (powerup: PowerupKind): GameEvent => ({
   type: 'convert',
   at: { x: 0, y: 0 },
-  tileType: 'pumpkin',
+  tileType: 'red',
   powerup,
-  tile: makeTile('pumpkin', powerup),
+  tile: makeTile('red', powerup),
 })
 const activate = (powerup: PowerupKind): GameEvent => ({
   type: 'power-activate',
@@ -191,9 +191,9 @@ describe('tutorial awaits', () => {
           step({ id: 'a' }),
           step({
             id: 'b',
-            trigger: { kind: 'powerup-created', powerup: 'broom' },
-            highlight: { kind: 'powerup', powerup: 'broom' },
-            await: { kind: 'activate', powerup: 'broom' },
+            trigger: { kind: 'powerup-created', powerup: 'sweep' },
+            highlight: { kind: 'powerup', powerup: 'sweep' },
+            await: { kind: 'activate', powerup: 'sweep' },
           }),
         ]),
       ],
@@ -201,15 +201,15 @@ describe('tutorial awaits', () => {
       fakeWorld(),
     )
     settleIn(core)
-    core.feed([convert('broom')])
+    core.feed([convert('sweep')])
     core.continueStep()
     strictEqual(showingId(core), 'b', 'the broom teaching appears once the broom exists')
     ok(!core.current?.blocking, 'an activate await is a non-blocking toast')
 
-    core.feed([activate('bomb')])
+    core.feed([activate('blast')])
     core.update(2)
     ok(core.current, 'the wrong power-up does not close it')
-    core.feed([activate('broom')])
+    core.feed([activate('sweep')])
     core.update(0.5)
     strictEqual(core.current, undefined, 'a matching activation dismisses it')
   })
@@ -221,7 +221,7 @@ describe('tutorial awaits', () => {
       fakeWorld(),
     )
     settleIn(core)
-    core.feed([activate('broom')])
+    core.feed([activate('sweep')])
     core.update(0.5)
     ok(core.current, 'dismissed too fast to read')
     core.update(1)
@@ -234,13 +234,13 @@ describe('tutorial awaits', () => {
       fakeHost(),
       fakeWorld(),
     )
-    core.feed([combo('broom', 'broom')])
+    core.feed([combo('sweep', 'sweep')])
     settleIn(core)
     ok(core.current, 'a start-triggered step still shows')
     core.feed([moveUsed(1)])
     core.update(2)
     ok(core.current, 'a combo from before the step appeared does not dismiss it')
-    core.feed([combo('bomb', 'bomb')])
+    core.feed([combo('blast', 'blast')])
     core.update(2)
     strictEqual(core.current, undefined, 'a fresh combo does')
   })
@@ -251,26 +251,26 @@ describe('tutorial awaits', () => {
 describe('tutorial triggers', () => {
   it('matches combo pairs regardless of order', () => {
     const core = new TutorialCore(
-      [script('s', [step({ id: 'a', trigger: { kind: 'combo', a: 'broom', b: 'little-ghost' } })])],
+      [script('s', [step({ id: 'a', trigger: { kind: 'combo', a: 'sweep', b: 'homing' } })])],
       fakeHost(),
       fakeWorld(),
     )
-    core.feed([combo('little-ghost', 'broom')])
+    core.feed([combo('homing', 'sweep')])
     core.update(3)
     strictEqual(showingId(core), 'a')
   })
 
   it('needs two distinct cells for a doubled powerups-present trigger', () => {
     const board = boardFromRows(['abcde', 'bcdef', 'cdefa', 'deXab', 'XXeXa'], FIXTURE_PALETTE)
-    requireCell(board, { x: 0, y: 0 }).tile = makeTile('pumpkin', 'broom')
+    requireCell(board, { x: 0, y: 0 }).tile = makeTile('red', 'sweep')
     const world = fakeWorld(board)
     const core = new TutorialCore(
       [
         script('s', [
           step({
             id: 'a',
-            trigger: { kind: 'powerups-present', a: 'broom', b: 'broom' },
-            highlight: { kind: 'powerups', a: 'broom', b: 'broom' },
+            trigger: { kind: 'powerups-present', a: 'sweep', b: 'sweep' },
+            highlight: { kind: 'powerups', a: 'sweep', b: 'sweep' },
           }),
         ]),
       ],
@@ -279,7 +279,7 @@ describe('tutorial triggers', () => {
     )
     core.update(3)
     strictEqual(core.current, undefined, 'one broom is not a broom × broom combo')
-    requireCell(board, { x: 1, y: 1 }).tile = makeTile('ghost', 'broom')
+    requireCell(board, { x: 1, y: 1 }).tile = makeTile('blue', 'sweep')
     core.update(0.1)
     strictEqual(showingId(core), 'a', 'two brooms are')
     strictEqual(core.highlight.length, 2, 'both halves get highlighted')
@@ -287,14 +287,14 @@ describe('tutorial triggers', () => {
 
   it('fires obstacle-seen from a board scan or a spread event', () => {
     const board = boardFromRows(['abcde', 'bcdef', 'cdefa', 'deXab', 'XXeXa'], FIXTURE_PALETTE)
-    requireCell(board, { x: 4, y: 0 }).modifier = 'cobweb-2'
+    requireCell(board, { x: 4, y: 0 }).modifier = 'cover-2'
     const core = new TutorialCore(
       [
         script('s', [
           step({
             id: 'a',
-            trigger: { kind: 'obstacle-seen', root: 'cobweb' },
-            highlight: { kind: 'modifier', root: 'cobweb' },
+            trigger: { kind: 'obstacle-seen', root: 'cover' },
+            highlight: { kind: 'modifier', root: 'cover' },
           }),
         ]),
       ],
@@ -306,13 +306,13 @@ describe('tutorial triggers', () => {
     strictEqual(core.highlight.length, 1)
 
     const eventCore = new TutorialCore(
-      [script('s', [step({ id: 'a', trigger: { kind: 'obstacle-seen', root: 'slime' } })])],
+      [script('s', [step({ id: 'a', trigger: { kind: 'obstacle-seen', root: 'spreader' } })])],
       fakeHost(),
       fakeWorld(),
     )
     eventCore.update(3)
     strictEqual(eventCore.current, undefined)
-    eventCore.feed([spread('slime-3')])
+    eventCore.feed([spread('spreader-3')])
     eventCore.update(0.1)
     strictEqual(showingId(eventCore), 'a', 'a mid-level slime spread counts too')
   })
@@ -323,17 +323,17 @@ describe('tutorial triggers', () => {
 describe('tutorial script queue', () => {
   it('lets a queued popup step in while the level script waits', () => {
     const board = boardFromRows(['abcde', 'bcdef', 'cdefa', 'deXab', 'XXeXa'], FIXTURE_PALETTE)
-    requireCell(board, { x: 0, y: 0 }).modifier = 'cobweb'
+    requireCell(board, { x: 0, y: 0 }).modifier = 'cover'
     const core = new TutorialCore(
       [
         script('level', [
           step({ id: 'l1' }),
-          step({ id: 'l2', trigger: { kind: 'powerup-created', powerup: 'broom' } }),
+          step({ id: 'l2', trigger: { kind: 'powerup-created', powerup: 'sweep' } }),
         ]),
         script('popup', [
           step({
             id: 'p1',
-            trigger: { kind: 'obstacle-seen', root: 'cobweb' },
+            trigger: { kind: 'obstacle-seen', root: 'cover' },
             await: { kind: 'seconds', seconds: 2 },
           }),
         ]),
@@ -345,7 +345,7 @@ describe('tutorial script queue', () => {
     strictEqual(showingId(core), 'l1', 'the level script goes first')
     core.continueStep()
     strictEqual(showingId(core), 'p1', 'popup shows while the broom teaching waits')
-    core.feed([convert('broom')])
+    core.feed([convert('sweep')])
     core.update(3)
     strictEqual(showingId(core), 'l2', 'the level script resumes once its trigger fires')
   })
@@ -364,7 +364,7 @@ describe('tutorial script queue', () => {
       [
         script('level', [
           step({ id: 'l1' }),
-          step({ id: 'l2', trigger: { kind: 'powerup-created', powerup: 'bomb' } }),
+          step({ id: 'l2', trigger: { kind: 'powerup-created', powerup: 'blast' } }),
         ]),
         script('popup', [step({ id: 'p1', trigger: { kind: 'obstacle-seen', root: 'ice' } })]),
       ],

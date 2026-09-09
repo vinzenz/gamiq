@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L37 — The Rat King: first of the castle's two boss houses. The king
@@ -13,16 +13,16 @@ export const level37 = {
   seed: 20297,
   moves: 28,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 2, y: 3, modifier: 'cobweb-1' },
+    { x: 2, y: 3, modifier: 'cover-1' },
     { x: 3, y: 3, modifier: 'boss' },
-    { x: 4, y: 3, modifier: 'cobweb-1' },
+    { x: 4, y: 3, modifier: 'cover-1' },
   ],
-  boss: { hp: 13, throwEvery: 3, throws: 'cobweb-2' },
+  boss: { hp: 13, throwEvery: 3, throws: 'cover-2' },
   goals: [
     { kind: 'boss', hits: 13 },
-    { kind: 'collect', color: 'ghost', count: 12 },
+    { kind: 'collect', color: 'blue', count: 12 },
   ],
   starThresholds: [12, 19],
 } satisfies RawLevel

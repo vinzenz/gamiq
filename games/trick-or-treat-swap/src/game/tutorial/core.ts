@@ -1,5 +1,5 @@
-import { findValidMove } from '../../engine/board.ts'
-import type { Board, GameEvent, Pos, PowerupKind, TileType } from '../../engine/types.ts'
+import { findValidMove } from '@gamiq/swap3/board'
+import type { Board, GameEvent, Pos, PowerupKind, TileType } from '@gamiq/swap3/types'
 import type {
   TutorialAwait,
   TutorialHighlight,
@@ -61,7 +61,7 @@ export function powerupCellsOn(board: Board, powerup: PowerupKind): Pos[] {
   return found
 }
 
-/** Cells carrying a modifier with the given root (`cobweb-2` → `cobweb`). */
+/** Cells carrying a modifier with the given root (`cover-2` → `cobweb`). */
 export function modifierRootCellsOn(board: Board, root: string): Pos[] {
   const found: Pos[] = []
   for (let y = 0; y < board.height; y++) {

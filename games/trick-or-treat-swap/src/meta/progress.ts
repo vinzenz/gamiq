@@ -1,4 +1,4 @@
-import type { Level } from '../engine/goals.ts'
+import type { Level } from '@gamiq/swap3/goals'
 import { LEVELS } from '../levels/index.ts'
 
 /**

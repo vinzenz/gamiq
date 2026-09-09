@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L15 — Crack the Glaze: the whole middle of the board is glazed over.
@@ -21,7 +21,7 @@ export const level15 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
     { x: 2, y: 2, modifier: 'ice' },
     { x: 5, y: 2, modifier: 'ice' },
@@ -34,7 +34,7 @@ export const level15 = {
   ],
   goals: [
     { kind: 'clear-modifier', modifier: 'ice' },
-    { kind: 'collect', color: 'bat', count: 14 },
+    { kind: 'collect', color: 'purple', count: 14 },
   ],
   starThresholds: [2, 9],
 } satisfies RawLevel

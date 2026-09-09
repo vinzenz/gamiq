@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L16 — Webbed Willows: the chapter's obstacle meets the last one. Webs
@@ -13,17 +13,17 @@ export const level16 = {
   seed: 20276,
   moves: 12,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 1, y: 2, modifier: 'cobweb-2' },
-    { x: 5, y: 2, modifier: 'cobweb-2' },
+    { x: 1, y: 2, modifier: 'cover-2' },
+    { x: 5, y: 2, modifier: 'cover-2' },
     { x: 3, y: 3, modifier: 'ice' },
     { x: 2, y: 5, modifier: 'ice' },
     { x: 4, y: 5, modifier: 'ice' },
   ],
   goals: [
     { kind: 'clear-modifier', modifier: 'ice' },
-    { kind: 'collect', color: 'ghost', count: 14 },
+    { kind: 'collect', color: 'blue', count: 14 },
   ],
   starThresholds: [2, 6],
 } satisfies RawLevel

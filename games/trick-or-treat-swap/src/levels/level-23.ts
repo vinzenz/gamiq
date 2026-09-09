@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L23 — Goo on the Vines: slime arrives, one blob in the middle. The goo
@@ -13,11 +13,11 @@ export const level23 = {
   seed: 20283,
   moves: 18,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
-  obstacles: [{ x: 3, y: 3, modifier: 'slime-3' }],
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
+  obstacles: [{ x: 3, y: 3, modifier: 'spreader-3' }],
   goals: [
-    { kind: 'collect', color: 'ghost', count: 12 },
-    { kind: 'collect', color: 'pumpkin', count: 12 },
+    { kind: 'collect', color: 'blue', count: 12 },
+    { kind: 'collect', color: 'red', count: 12 },
   ],
   starThresholds: [8, 11],
 } satisfies RawLevel

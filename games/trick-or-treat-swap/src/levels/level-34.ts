@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L34 — The Hill King: the Cemetery Hill finale. The crowned wraith
@@ -22,16 +22,16 @@ export const level34 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 3, y: 3, modifier: 'cobweb-2' },
+    { x: 3, y: 3, modifier: 'cover-2' },
     { x: 4, y: 3, modifier: 'boss' },
-    { x: 5, y: 3, modifier: 'cobweb-2' },
+    { x: 5, y: 3, modifier: 'cover-2' },
   ],
-  boss: { hp: 13, throwEvery: 3, throws: 'gravestone-2' },
+  boss: { hp: 13, throwEvery: 3, throws: 'blocker-2' },
   goals: [
     { kind: 'boss', hits: 13 },
-    { kind: 'collect', color: 'skull', count: 12 },
+    { kind: 'collect', color: 'ivory', count: 12 },
   ],
   starThresholds: [4, 19],
 } satisfies RawLevel

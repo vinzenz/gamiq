@@ -24,7 +24,7 @@ describe('detectShapes', () => {
     const shape = shapes[0]
     ok(shape)
     strictEqual(shape.shape, 'run3')
-    strictEqual(shape.tileType, 'pumpkin')
+    strictEqual(shape.tileType, 'red')
     strictEqual(shape.powerup, undefined)
     deepStrictEqual(shape.cells, [
       { x: 0, y: 0 },
@@ -46,13 +46,13 @@ describe('detectShapes', () => {
     ])
   })
 
-  it('finds a match-4 as a broom with sweep direction', () => {
+  it('finds a match-4 as a sweep with sweep direction', () => {
     const h = shapesOf(['aaaa.', '.bc..'])
     strictEqual(h.length, 1)
     const hShape = h[0]
     ok(hShape)
     strictEqual(hShape.shape, 'run4')
-    strictEqual(hShape.powerup, 'broom')
+    strictEqual(hShape.powerup, 'sweep')
     strictEqual(hShape.dir, 'h')
 
     const v = shapesOf(['a.', 'a.', 'a.', 'a.', 'b.'])
@@ -60,39 +60,39 @@ describe('detectShapes', () => {
     const vShape = v[0]
     ok(vShape)
     strictEqual(vShape.shape, 'run4')
-    strictEqual(vShape.powerup, 'broom')
+    strictEqual(vShape.powerup, 'sweep')
     strictEqual(vShape.dir, 'v')
     deepStrictEqual(vShape.spawn, { x: 0, y: 2 })
   })
 
-  it('finds a straight match-5 as a cauldron', () => {
+  it('finds a straight match-5 as a prism', () => {
     const shapes = shapesOf(['aaaaa', 'bbcb.'])
     strictEqual(shapes.length, 1)
     const shape = shapes[0]
     ok(shape)
     strictEqual(shape.shape, 'run5')
-    strictEqual(shape.powerup, 'cauldron')
+    strictEqual(shape.powerup, 'prism')
     deepStrictEqual(shape.spawn, { x: 2, y: 0 })
   })
 
-  it('finds an L as an intersection (pumpkin bomb)', () => {
+  it('finds an L as an intersection (red blast)', () => {
     const shapes = shapesOf(['a....', 'a....', 'aaab.'])
     strictEqual(shapes.length, 1)
     const shape = shapes[0]
     ok(shape)
     strictEqual(shape.shape, 'intersection')
-    strictEqual(shape.powerup, 'bomb')
+    strictEqual(shape.powerup, 'blast')
     strictEqual(shape.cells.length, 5)
     deepStrictEqual(shape.spawn, { x: 0, y: 2 })
   })
 
-  it('finds a T as an intersection (pumpkin bomb)', () => {
+  it('finds a T as an intersection (red blast)', () => {
     const shapes = shapesOf(['.....', '..a..', 'aaab.', '..a..'])
     strictEqual(shapes.length, 1)
     const shape = shapes[0]
     ok(shape)
     strictEqual(shape.shape, 'intersection')
-    strictEqual(shape.powerup, 'bomb')
+    strictEqual(shape.powerup, 'blast')
     deepStrictEqual(shape.spawn, { x: 2, y: 2 })
   })
 
@@ -102,16 +102,16 @@ describe('detectShapes', () => {
     const shape = shapes[0]
     ok(shape)
     strictEqual(shape.shape, 'intersection')
-    strictEqual(shape.powerup, 'bomb')
+    strictEqual(shape.powerup, 'blast')
   })
 
-  it('finds a 2×2 square as a little ghost', () => {
+  it('finds a 2×2 square as a little blue', () => {
     const shapes = shapesOf(['aa.', 'aa.', 'b.c'])
     strictEqual(shapes.length, 1)
     const shape = shapes[0]
     ok(shape)
     strictEqual(shape.shape, 'square')
-    strictEqual(shape.powerup, 'little-ghost')
+    strictEqual(shape.powerup, 'homing')
     strictEqual(shape.cells.length, 4)
   })
 

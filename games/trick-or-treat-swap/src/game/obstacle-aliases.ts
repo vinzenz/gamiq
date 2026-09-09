@@ -1,10 +1,10 @@
-import { registerCellModifier } from '../engine/registry.ts'
-import type { Board } from '../engine/types.ts'
+import { registerCellModifier } from '@gamiq/swap3/registry'
+import type { Board } from '@gamiq/swap3/types'
 
 /**
  * Compatibility aliases for the placeholder levels. `src/levels/level-3.ts`
  * and `level-5.ts` predate the numbered modifier ids that `obstacles.ts`
- * registers (`cobweb-1`, `gravestone-3`): they place the bare ids `cobweb`
+ * registers (`cover-1`, `blocker-3`): they place the bare ids `cobweb`
  * and `gravestone`, which would otherwise have no behaviour and make those
  * levels' clear-modifier goals unreachable. Register the easiest form of each
  * obstacle under the bare id — one direct hit peels/breaks. The content
@@ -13,26 +13,26 @@ import type { Board } from '../engine/types.ts'
  */
 export function registerLegacyObstacleAliases(): void {
   registerCellModifier({
-    id: 'cobweb',
+    id: 'cover',
     gravityBarrier: true,
     onHit: (hit, emit) => {
       // Like cobwebs generally: only clears landing on the webbed tile peel.
       if (!hit.direct) return
       hit.cell.modifier = undefined
-      emit({ type: 'obstacle', at: hit.at, modifier: 'cobweb', action: 'destroy' })
+      emit({ type: 'obstacle', at: hit.at, modifier: 'cover', action: 'destroy' })
     },
   })
   registerCellModifier({
-    id: 'gravestone',
+    id: 'blocker',
     gravityBarrier: true,
     onHit: (hit, emit) => {
       hit.cell.modifier = undefined
-      emit({ type: 'obstacle', at: hit.at, modifier: 'gravestone', action: 'destroy' })
+      emit({ type: 'obstacle', at: hit.at, modifier: 'blocker', action: 'destroy' })
     },
   })
 }
 
-const TILELESS_ROOTS = new Set(['gravestone', 'slime'])
+const TILELESS_ROOTS = new Set(['blocker', 'spreader'])
 
 /**
  * Gravestones and slimes occupy their cell without a tile (engine docs), but

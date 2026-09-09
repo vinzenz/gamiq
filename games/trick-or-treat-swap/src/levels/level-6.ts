@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L6 — Webbed Porch: first obstacle, in its easiest form. Five single-layer
@@ -13,17 +13,17 @@ export const level6 = {
   seed: 20266,
   moves: 14,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   obstacles: [
-    { x: 1, y: 1, modifier: 'cobweb-1' },
-    { x: 5, y: 1, modifier: 'cobweb-1' },
-    { x: 3, y: 3, modifier: 'cobweb-1' },
-    { x: 1, y: 5, modifier: 'cobweb-1' },
-    { x: 5, y: 5, modifier: 'cobweb-1' },
+    { x: 1, y: 1, modifier: 'cover-1' },
+    { x: 5, y: 1, modifier: 'cover-1' },
+    { x: 3, y: 3, modifier: 'cover-1' },
+    { x: 1, y: 5, modifier: 'cover-1' },
+    { x: 5, y: 5, modifier: 'cover-1' },
   ],
   goals: [
-    { kind: 'clear-modifier', modifier: 'cobweb-1' },
-    { kind: 'collect', color: 'ghost', count: 12 },
+    { kind: 'clear-modifier', modifier: 'cover-1' },
+    { kind: 'collect', color: 'blue', count: 12 },
   ],
   starThresholds: [2, 8],
 } satisfies RawLevel

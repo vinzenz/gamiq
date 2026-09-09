@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L39 — The Longest Night: the last gauntlet before the count. Six
@@ -22,7 +22,7 @@ export const level39 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2, green: 2 },
   obstacles: [
     { x: 2, y: 1, modifier: 'ice' },
     { x: 5, y: 1, modifier: 'ice' },
@@ -30,12 +30,12 @@ export const level39 = {
     { x: 4, y: 3, modifier: 'lock' },
     { x: 1, y: 5, modifier: 'ice' },
     { x: 6, y: 5, modifier: 'ice' },
-    { x: 2, y: 6, modifier: 'slime-3' },
-    { x: 5, y: 6, modifier: 'slime-3' },
+    { x: 2, y: 6, modifier: 'spreader-3' },
+    { x: 5, y: 6, modifier: 'spreader-3' },
   ],
   goals: [
-    { kind: 'collect', color: 'pumpkin', count: 22 },
-    { kind: 'collect', color: 'skull', count: 22 },
+    { kind: 'collect', color: 'red', count: 22 },
+    { kind: 'collect', color: 'ivory', count: 22 },
   ],
   starThresholds: [2, 17],
 } satisfies RawLevel

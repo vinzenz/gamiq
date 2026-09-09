@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L12 — The Long Row: the pre-boss gauntlet. Everything Graveyard Path has
@@ -12,18 +12,18 @@ export const level12 = {
   seed: 20272,
   moves: 28,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 3 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 3 },
   obstacles: [
-    { x: 1, y: 2, modifier: 'cobweb-1' },
-    { x: 5, y: 2, modifier: 'cobweb-1' },
-    { x: 3, y: 4, modifier: 'cobweb-1' },
-    { x: 2, y: 3, modifier: 'gravestone-2' },
-    { x: 4, y: 3, modifier: 'gravestone-2' },
+    { x: 1, y: 2, modifier: 'cover-1' },
+    { x: 5, y: 2, modifier: 'cover-1' },
+    { x: 3, y: 4, modifier: 'cover-1' },
+    { x: 2, y: 3, modifier: 'blocker-2' },
+    { x: 4, y: 3, modifier: 'blocker-2' },
   ],
   goals: [
-    { kind: 'deliver', color: 'candy', count: 3 },
-    { kind: 'collect', color: 'pumpkin', count: 12 },
-    { kind: 'clear-modifier', modifier: 'cobweb-1' },
+    { kind: 'deliver', color: 'pink', count: 3 },
+    { kind: 'collect', color: 'red', count: 12 },
+    { kind: 'clear-modifier', modifier: 'cover-1' },
   ],
   starThresholds: [4, 6],
 } satisfies RawLevel

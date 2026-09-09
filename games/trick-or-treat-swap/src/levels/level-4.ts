@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L4 — Pumpkin Carving: the Pumpkin Bomb lesson. L/T match-5s need a fifth
@@ -11,10 +11,10 @@ export const level4 = {
   seed: 20264,
   moves: 16,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   goals: [
-    { kind: 'collect', color: 'pumpkin', count: 15 },
-    { kind: 'collect', color: 'candy', count: 15 },
+    { kind: 'collect', color: 'red', count: 15 },
+    { kind: 'collect', color: 'pink', count: 15 },
   ],
   starThresholds: [3, 11],
 } satisfies RawLevel

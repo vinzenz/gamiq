@@ -1,5 +1,5 @@
 import { unlockAudio } from '@gamiq/shared'
-import type { GameEvent, Pos } from '../../engine/types.ts'
+import type { GameEvent, Pos } from '@gamiq/swap3/types'
 import { TutorialCore, type TutorialHost, type TutorialWorld } from './core.ts'
 import type { TutorialScript } from './types.ts'
 

@@ -1,7 +1,14 @@
-import type { ValidMove } from '../engine/board.ts'
-import type { Board, FallMove, Pos, SpawnedCell, Tile } from '../engine/types.ts'
+import type { ValidMove } from '@gamiq/swap3/board'
+import type { Board, FallMove, Pos, SpawnedCell, Tile } from '@gamiq/swap3/types'
 import { easeInQuad, easeOutQuad, roundRectPath } from './draw.ts'
-import { drawSprite, modifierSprite, powerupSprites, treatBagSprite, TILE_COLORS, tileSprites } from './sprites.ts'
+import {
+  drawSprite,
+  modifierSprite,
+  powerupSprites,
+  TILE_COLORS,
+  tileSprites,
+  treatBagSprite,
+} from './sprites.ts'
 
 /**
  * Visual mirror of the engine board. The engine resolves a whole move before
@@ -57,9 +64,9 @@ interface DyingTile {
 const DYING_DUR = 0.22
 const FLASH_DUR = 0.16
 /** Modifiers whose sprite replaces the (absent) tile. */
-const TILELESS = new Set(['gravestone', 'slime'])
+const TILELESS = new Set(['blocker', 'spreader'])
 /** Modifiers drawn as an overlay on top of their tile. */
-const OVERLAYS = new Set(['cobweb', 'ice', 'lock'])
+const OVERLAYS = new Set(['cover', 'ice', 'lock'])
 
 export class BoardView {
   cell = 48
@@ -284,9 +291,16 @@ export class BoardView {
     // deliveries are tiles cleared on this row, so the goal needs a home.
     if (opts.deliverRow) {
       const bob = Math.sin(opts.time * 2.4) * 1.5
-      drawSprite(ctx, treatBagSprite, originX + w / 2, originY + h - cell * 0.42 + bob, cell * 1.3, {
-        alpha: 0.42,
-      })
+      drawSprite(
+        ctx,
+        treatBagSprite,
+        originX + w / 2,
+        originY + h - cell * 0.42 + bob,
+        cell * 1.3,
+        {
+          alpha: 0.42,
+        },
+      )
     }
 
     // Under-modifiers, tiles, overlays — one layering pass per cell.
@@ -315,7 +329,14 @@ export class BoardView {
             const ratio = opts.boss.maxHp > 0 ? Math.min(1, hp / opts.boss.maxHp) : 0
             if (ratio > 0) {
               ctx.fillStyle = ratio > 0.4 ? '#ff8a2a' : '#ff5a5a'
-              roundRectPath(ctx, bx + 1, by + 1, Math.max(2, (barW - 2) * ratio), barH - 2, (barH - 2) / 2)
+              roundRectPath(
+                ctx,
+                bx + 1,
+                by + 1,
+                Math.max(2, (barW - 2) * ratio),
+                barH - 2,
+                (barH - 2) / 2,
+              )
               ctx.fill()
             }
           }

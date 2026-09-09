@@ -1,4 +1,4 @@
-import type { PowerupKind, TileType } from '../../engine/types.ts'
+import type { PowerupKind, TileType } from '@gamiq/swap3/types'
 
 /**
  * The declarative tutorial-step format (ticket ToTS-a5d77f).

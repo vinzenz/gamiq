@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L2 — Maple Lane 2: the first shaped board (top corners cut, so the mask
@@ -11,10 +11,10 @@ export const level2 = {
   seed: 20262,
   moves: 20,
   shape: ['##...##', '#.....#', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 3, ghost: 3, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 3, blue: 3, ivory: 2, purple: 2, pink: 2 },
   goals: [
-    { kind: 'collect', color: 'ghost', count: 12 },
-    { kind: 'collect', color: 'candy', count: 12 },
+    { kind: 'collect', color: 'blue', count: 12 },
+    { kind: 'collect', color: 'pink', count: 12 },
   ],
   starThresholds: [4, 10],
 } satisfies RawLevel

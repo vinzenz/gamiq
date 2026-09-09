@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L24 — The Creeping Rows: three slime patches and no time to waste. The
@@ -22,12 +22,12 @@ export const level24 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 2, y: 2, modifier: 'slime-3' },
-    { x: 5, y: 4, modifier: 'slime-3' },
-    { x: 3, y: 6, modifier: 'slime-3' },
+    { x: 2, y: 2, modifier: 'spreader-3' },
+    { x: 5, y: 4, modifier: 'spreader-3' },
+    { x: 3, y: 6, modifier: 'spreader-3' },
   ],
-  goals: [{ kind: 'collect', color: 'potion', count: 24 }],
+  goals: [{ kind: 'collect', color: 'green', count: 24 }],
   starThresholds: [2, 12],
 } satisfies RawLevel

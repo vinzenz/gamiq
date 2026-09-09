@@ -43,7 +43,7 @@ export interface Swap3Options {
   onEval?: (snapshot: EvalSnapshot) => 'win' | 'lose' | undefined
   /**
    * Seam for power-up/combo activations that resolve without forming a match
-   * (e.g. swapping a cauldron with a tile). Return true to let the swap
+   * (e.g. swapping a prism with a tile). Return true to let the swap
    * through; the resolution then spends the move even if nothing matches.
    * Activations registered through the registry (`powerups.ts`) are planned
    * first and take precedence; this hook only approves extra swaps.
@@ -184,7 +184,7 @@ export class Swap3Game {
 
   #finishMove(resolution: MoveResolution): void {
     this.log.push(...resolution.events)
-    // Obstacle seam: per-move board effects (slime spread) run once the board
+    // Obstacle seam: per-move board effects (spreader spread) run once the board
     // has settled, still inside the move that triggered them.
     runTurnHooks(this.board, this.rng, (event) => this.#record(event))
 
@@ -209,7 +209,7 @@ export class Swap3Game {
 
   #reshuffle(): void {
     if (!shuffleBoard(this.board, this.rng)) {
-      throw new Error('trick-or-treat-swap: board could not be reshuffled into a playable state')
+      throw new Error('swap3: board could not be reshuffled into a playable state')
     }
     this.#record({ type: 'shuffle' })
   }

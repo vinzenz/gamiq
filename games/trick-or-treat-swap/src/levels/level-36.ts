@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L36 — The Dungeon Kitchen: a narrow tower board where every column is
@@ -12,7 +12,7 @@ export const level36 = {
   seed: 20296,
   moves: 26,
   shape: ['......', '......', '......', '......', '......', '......', '......', '......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
     { x: 1, y: 1, modifier: 'lock' },
     { x: 4, y: 1, modifier: 'lock' },
@@ -23,7 +23,7 @@ export const level36 = {
   ],
   goals: [
     { kind: 'clear-modifier', modifier: 'lock' },
-    { kind: 'collect', color: 'pumpkin', count: 14 },
+    { kind: 'collect', color: 'red', count: 14 },
   ],
   starThresholds: [2, 17],
 } satisfies RawLevel

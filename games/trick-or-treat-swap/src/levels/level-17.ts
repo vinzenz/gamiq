@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L17 — Meltwater Basket: the deliver lesson returns, now across frozen
@@ -21,7 +21,7 @@ export const level17 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, candy: 3, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, pink: 3, green: 2 },
   obstacles: [
     { x: 1, y: 4, modifier: 'ice' },
     { x: 6, y: 4, modifier: 'ice' },
@@ -29,8 +29,8 @@ export const level17 = {
     { x: 4, y: 5, modifier: 'ice' },
   ],
   goals: [
-    { kind: 'deliver', color: 'candy', count: 3 },
-    { kind: 'collect', color: 'potion', count: 12 },
+    { kind: 'deliver', color: 'pink', count: 3 },
+    { kind: 'collect', color: 'green', count: 12 },
   ],
   starThresholds: [4, 21],
 } satisfies RawLevel

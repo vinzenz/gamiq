@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L20 — Mother Hex: the Witch's Hollow finale. The hex-mother squats behind
@@ -22,16 +22,16 @@ export const level20 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 3, y: 3, modifier: 'cobweb-2' },
+    { x: 3, y: 3, modifier: 'cover-2' },
     { x: 4, y: 3, modifier: 'boss' },
-    { x: 5, y: 3, modifier: 'cobweb-2' },
+    { x: 5, y: 3, modifier: 'cover-2' },
   ],
   boss: { hp: 10, throwEvery: 4, throws: 'ice' },
   goals: [
     { kind: 'boss', hits: 10 },
-    { kind: 'collect', color: 'potion', count: 12 },
+    { kind: 'collect', color: 'green', count: 12 },
   ],
   starThresholds: [10, 17],
 } satisfies RawLevel

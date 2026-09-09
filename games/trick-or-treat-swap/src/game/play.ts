@@ -1,19 +1,19 @@
 import { loadJSON, saveJSON, trackPointers, unlockAudio } from '@gamiq/shared'
-import type { ValidMove } from '../engine/board.ts'
-import type { GoalDef, LevelGame } from '../engine/goals.ts'
-import { levelStars } from '../engine/goals.ts'
-import { areAdjacent, samePos } from '../engine/pos.ts'
-import type { GameEvent, Pos, SpawnedCell, TileType } from '../engine/types.ts'
+import type { ValidMove } from '@gamiq/swap3/board'
+import type { GoalDef, LevelGame } from '@gamiq/swap3/goals'
+import { levelStars } from '@gamiq/swap3/goals'
+import { areAdjacent, samePos } from '@gamiq/swap3/pos'
+import type { GameEvent, Pos, SpawnedCell, TileType } from '@gamiq/swap3/types'
 import { LEVELS, levelGame } from '../levels/index.ts'
 import { sfx } from './audio.ts'
-import { bossArtFor } from './boss-art.ts'
 import { BoardView, type FallTween } from './board-view.ts'
+import { bossArtFor } from './boss-art.ts'
 import { easeInQuad } from './draw.ts'
 import { Fx } from './fx.ts'
 import { registerLegacyObstacleAliases, stripTilelessObstacleTiles } from './obstacle-aliases.ts'
 import { recordStars } from './progress.ts'
 import { registerScreen, type Screen, type ScreenHost } from './screens.ts'
-import { modifierSpriteUrl, POWERUP_LABELS, TILE_COLORS, TILE_URLS, loadSprite } from './sprites.ts'
+import { loadSprite, modifierSpriteUrl, POWERUP_LABELS, TILE_COLORS, TILE_URLS } from './sprites.ts'
 import { boardWorld } from './tutorial/core.ts'
 import { TutorialDirector } from './tutorial/director.ts'
 import { levelScripts } from './tutorial/scripts.ts'
@@ -44,11 +44,11 @@ interface Step {
 const HINT_DELAY = 5
 
 const OBSTACLE_COLORS: Record<string, string> = {
-  cobweb: '#d9d2f2',
-  gravestone: '#a8adbd',
+  cover: '#d9d2f2',
+  blocker: '#a8adbd',
   ice: '#bfe8ff',
   lock: '#e3b341',
-  slime: '#a4d43c',
+  spreader: '#a4d43c',
 }
 
 interface Chip {
@@ -57,20 +57,20 @@ interface Chip {
 }
 
 const TILE_LABELS: Record<TileType, string> = {
-  pumpkin: 'pumpkins',
-  ghost: 'ghosts',
-  skull: 'skulls',
-  bat: 'bats',
-  candy: 'candies',
-  potion: 'potions',
+  red: 'pumpkins',
+  blue: 'ghosts',
+  ivory: 'skulls',
+  purple: 'bats',
+  pink: 'candies',
+  green: 'potions',
 }
 
 const MODIFIER_LABELS: Record<string, string> = {
-  cobweb: 'cobweb',
-  gravestone: 'gravestone',
+  cover: 'cobweb',
+  blocker: 'gravestone',
   ice: 'cursed ice',
   lock: 'lock',
-  slime: 'slime',
+  spreader: 'slime',
 }
 
 /** Plain-language goal description — shown on chip tap and on first sight. */
@@ -85,8 +85,7 @@ function describeGoal(goal: GoalDef): string {
       const root = match?.[1] ?? goal.modifier
       const layers = Number(match?.[2] ?? 1)
       const base = MODIFIER_LABELS[root] ?? root
-      const label =
-        layers >= 2 ? `${layers === 2 ? 'double' : 'triple'} ${base}s` : `${base}s`
+      const label = layers >= 2 ? `${layers === 2 ? 'double' : 'triple'} ${base}s` : `${base}s`
       return `Clear every ${label}: match next to them or hit them with power-ups.`
     }
     case 'boss':
@@ -488,20 +487,20 @@ class PlayScreen implements Screen {
 
   #activateStep(e: ActivateEvent, clear: ClearEvent | undefined): Step {
     return {
-      dur: e.powerup === 'little-ghost' ? 0.34 : 0.16,
+      dur: e.powerup === 'homing' ? 0.34 : 0.16,
       start: () => {
         const c = this.#view.centerOf(e.at)
-        if (e.powerup === 'little-ghost') {
+        if (e.powerup === 'homing') {
           const target = clear?.cells.find((cell) => !samePos(cell.at, e.at))?.at
           if (target) {
             const t1 = this.#view.centerOf(target)
             this.#fx.flight(c.x, c.y, t1.x, t1.y, 0.3)
           }
-          sfx.ghost()
-        } else if (e.powerup === 'bomb') {
+          sfx.blue()
+        } else if (e.powerup === 'blast') {
           this.#fx.burst(c.x, c.y, '#ffd23f', { count: 8, speed: 90, gravity: 0, life: 0.3 })
           sfx.fuse()
-        } else if (e.powerup === 'broom') {
+        } else if (e.powerup === 'sweep') {
           this.#fx.burst(c.x, c.y, '#ffe9a3', { count: 6, speed: 90, gravity: 0, life: 0.3 })
           sfx.fuse()
         } else {
@@ -539,10 +538,10 @@ class PlayScreen implements Screen {
       dur: 0.24,
       start: () => {
         const cells = e.cells
-        const bomb = cells.find((c) => c.tile.powerup === 'bomb')
-        const broom = cells.find((c) => c.tile.powerup === 'broom')
-        const cauldron = cells.some((c) => c.tile.powerup === 'cauldron')
-        const ghost = cells.find((c) => c.tile.powerup === 'little-ghost')
+        const bomb = cells.find((c) => c.tile.powerup === 'blast')
+        const broom = cells.find((c) => c.tile.powerup === 'sweep')
+        const cauldron = cells.some((c) => c.tile.powerup === 'prism')
+        const ghost = cells.find((c) => c.tile.powerup === 'homing')
         if (bomb) {
           const c = this.#view.centerOf(bomb.at)
           this.#fx.ring(c.x, c.y, this.#view.cell * 2.4, 'rgb(255 179 71)', 7, 0.5)
@@ -632,7 +631,7 @@ class PlayScreen implements Screen {
           this.#view.updateModifier(e.at, undefined)
           this.#fx.burst(c.x, c.y, color, { count: 14, speed: 230 })
           this.#fx.kick(2)
-          if (root === 'slime') sfx.spread()
+          if (root === 'spreader') sfx.spread()
           else sfx.break()
         } else if (e.action === 'spread') {
           this.#view.updateModifier(e.at, e.modifier)
@@ -923,16 +922,18 @@ class PlayScreen implements Screen {
           const n = e.cells.filter((c) => c.tile.type === goal.color).length
           if (n > 0) bumps.push([goalIndex, n])
         } else if (goal.kind === 'deliver') {
-          const n = e.cells.filter(
-            (c) => c.tile.type === goal.color && c.at.y === bottomRow,
-          ).length
+          const n = e.cells.filter((c) => c.tile.type === goal.color && c.at.y === bottomRow).length
           if (n > 0) bumps.push([goalIndex, n])
         }
       })
     } else if (e.type === 'obstacle') {
       const root = modifierRoot(e.modifier)
       this.#bundle.level.goals.forEach((goal, goalIndex) => {
-        if (goal.kind === 'clear-modifier' && e.action === 'destroy' && modifierRoot(goal.modifier) === root) {
+        if (
+          goal.kind === 'clear-modifier' &&
+          e.action === 'destroy' &&
+          modifierRoot(goal.modifier) === root
+        ) {
           bumps.push([goalIndex, 1])
         } else if (goal.kind === 'boss' && root === 'boss') {
           bumps.push([goalIndex, 1])
@@ -982,8 +983,10 @@ class PlayScreen implements Screen {
     const seen = loadGoalHintSeen()
     const index = this.#bundle.level.goals.findIndex((goal) => seen[goal.kind] !== true)
     if (index === -1) return
+    const goal = this.#bundle.level.goals[index]
+    if (!goal) return
     this.#showGoalHint(index)
-    seen[this.#bundle.level.goals[index]!.kind] = true
+    seen[goal.kind] = true
     saveJSON(GOAL_HINT_SEEN_KEY, seen)
   }
 

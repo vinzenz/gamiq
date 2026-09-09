@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L5 — Bubbling Brew: completes the power-up set. Straight match-5s brew the
@@ -13,10 +13,10 @@ export const level5 = {
   seed: 20265,
   moves: 12,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, bat: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, purple: 2, pink: 2, green: 2 },
   goals: [
-    { kind: 'collect', color: 'potion', count: 16 },
-    { kind: 'collect', color: 'candy', count: 16 },
+    { kind: 'collect', color: 'green', count: 16 },
+    { kind: 'collect', color: 'pink', count: 16 },
   ],
   starThresholds: [2, 6],
 } satisfies RawLevel

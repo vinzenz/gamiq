@@ -13,7 +13,7 @@ import type { Board, GameEvent } from './types.ts'
 
 /**
  * Match-4 fixture (same shape as the goals ticket's deliver fixture): swapping
- * (2,3) with (2,4) forms a skull run across the bottom row that touches the
+ * (2,3) with (2,4) forms a ivory run across the bottom row that touches the
  * boss cell at (1,3) via (1,4). The boss cell itself is a tile-less occupant.
  */
 const BOSS_ROWS = ['abcde', 'bcdef', 'cdefa', 'deXab', 'XXeXa']
@@ -26,13 +26,13 @@ const bossFixture = (id: string): Board => {
   return board
 }
 
-/** Broom fixture: a broom at (3,2), boss cell at (1,2), no matches, one valid move. */
-const broomFixture = (id: string): Board => {
+/** Broom fixture: a sweep at (3,2), boss cell at (1,2), no matches, one valid move. */
+const sweepFixture = (id: string): Board => {
   const board = boardFromRows(['abcde', 'deabc', 'b.bea', 'ceabd', 'eadcb'], FIXTURE_PALETTE)
   const boss = requireCell(board, { x: 1, y: 2 })
   boss.tile = undefined
   boss.modifier = id
-  requireCell(board, { x: 3, y: 2 }).tile = makeTile('pumpkin', 'broom', 'h')
+  requireCell(board, { x: 3, y: 2 }).tile = makeTile('red', 'sweep', 'h')
   return board
 }
 
@@ -59,11 +59,11 @@ const bossLevel = (): RawLevel => ({
   seed: 4242,
   moves: 60,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 1 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 1 },
   obstacles: [{ x: 3, y: 3, modifier: 'boss' }],
   goals: [{ kind: 'boss', hits: 2 }],
   starThresholds: [10, 25],
-  boss: { hp: 2, throwEvery: 50, throws: 'cobweb-1' },
+  boss: { hp: 2, throwEvery: 50, throws: 'cover-1' },
 })
 
 describe('boss basics', () => {
@@ -73,7 +73,7 @@ describe('boss basics', () => {
     ok(isBossModifier('boss-99'))
     ok(!isBossModifier('bosses'))
     ok(!isBossModifier('boss-0'))
-    ok(!isBossModifier('cobweb-2'))
+    ok(!isBossModifier('cover-2'))
   })
 
   it('finds the live boss and its hp', () => {
@@ -97,7 +97,7 @@ describe('boss damage', () => {
     const game = new Swap3Game({ seed: 7, board })
     const tracker = new GoalTracker(game, [{ kind: 'boss', hits: 1 }])
     let hits = 0
-    attachBoss(board, { hp: 1, throwEvery: 50, throws: 'cobweb-1' }, () => {
+    attachBoss(board, { hp: 1, throwEvery: 50, throws: 'cover-1' }, () => {
       hits++
       tracker.recordBossHit()
     })
@@ -124,7 +124,7 @@ describe('boss damage', () => {
     const board = bossFixture('boss-2')
     const game = new Swap3Game({ seed: 7, board })
     const tracker = new GoalTracker(game, [{ kind: 'boss', hits: 2 }])
-    attachBoss(board, { hp: 2, throwEvery: 99, throws: 'cobweb-1' }, () => tracker.recordBossHit())
+    attachBoss(board, { hp: 2, throwEvery: 99, throws: 'cover-1' }, () => tracker.recordBossHit())
 
     const outcome = game.trySwap({ x: 2, y: 3 }, { x: 2, y: 4 })
     ok(outcome.accepted)
@@ -157,11 +157,11 @@ describe('boss damage', () => {
   })
 
   it('takes damage from power-up footprints covering the boss cell', () => {
-    const board = broomFixture('boss-1')
+    const board = sweepFixture('boss-1')
     const game = new Swap3Game({ seed: 7, board })
-    ok(detectShapes(board).length === 0, 'broom fixture has pre-made matches')
+    ok(detectShapes(board).length === 0, 'sweep fixture has pre-made matches')
     const tracker = new GoalTracker(game, [{ kind: 'boss', hits: 1 }])
-    attachBoss(board, { hp: 1, throwEvery: 99, throws: 'cobweb-1' }, () => tracker.recordBossHit())
+    attachBoss(board, { hp: 1, throwEvery: 99, throws: 'cover-1' }, () => tracker.recordBossHit())
 
     const outcome = game.tryTap({ x: 3, y: 2 })
     ok(outcome.accepted)
@@ -170,7 +170,7 @@ describe('boss damage', () => {
     const destroy = outcome.events.find(
       (event) => event.type === 'obstacle' && event.action === 'destroy',
     )
-    ok(destroy, 'the broom sweep did not hit the boss')
+    ok(destroy, 'the sweep sweep did not hit the boss')
     strictEqual(requireCell(board, { x: 1, y: 2 }).modifier, undefined)
     ok(tracker.allMet)
   })
@@ -178,7 +178,7 @@ describe('boss damage', () => {
   it('lets the freed cell fall and refill normally after defeat', () => {
     const board = bossFixture('boss-1')
     const game = new Swap3Game({ seed: 7, board })
-    attachBoss(board, { hp: 1, throwEvery: 99, throws: 'cobweb-1' })
+    attachBoss(board, { hp: 1, throwEvery: 99, throws: 'cover-1' })
     ok(game.trySwap({ x: 2, y: 3 }, { x: 2, y: 4 }).accepted)
 
     // Tiles stacked above the old boss cell drop into it on the next move.
@@ -195,7 +195,7 @@ describe('boss throws', () => {
   it('throws every N moves onto a plain cell, wrapping the tile', () => {
     const board = bossFixture('boss-99')
     const game = new Swap3Game({ seed: 7, board })
-    attachBoss(board, { hp: 99, throwEvery: 2, throws: 'cobweb-1' })
+    attachBoss(board, { hp: 99, throwEvery: 2, throws: 'cover-1' })
 
     let spreads = 0
     let firstThrow: ObstacleEvent | undefined
@@ -210,18 +210,18 @@ describe('boss throws', () => {
       if (thrown[0] && !firstThrow) {
         firstThrow = thrown[0]
         const cell = requireCell(board, firstThrow.at)
-        strictEqual(cell.modifier, 'cobweb-1')
-        ok(cell.tile, 'cobweb must wrap the tile it lands on')
+        strictEqual(cell.modifier, 'cover-1')
+        ok(cell.tile, 'cover must wrap the tile it lands on')
       }
     }
     ok(firstThrow)
-    strictEqual(firstThrow.modifier, 'cobweb-1')
+    strictEqual(firstThrow.modifier, 'cover-1')
   })
 
   it('occupant throws replace the tile and emit the eaten clear', () => {
     const board = bossFixture('boss-99')
     const game = new Swap3Game({ seed: 7, board })
-    attachBoss(board, { hp: 99, throwEvery: 1, throws: 'slime-3' })
+    attachBoss(board, { hp: 99, throwEvery: 1, throws: 'spreader-3' })
 
     const hint = game.findHint()
     ok(hint)
@@ -232,10 +232,10 @@ describe('boss throws', () => {
     const at = thrown[0]?.at
     ok(at)
     const cell = requireCell(board, at)
-    // The slime hook may tick the fresh slime in the same move (hook order is
+    // The spreader hook may tick the fresh spreader in the same move (hook order is
     // import order), so accept the freshly thrown id or its first tick.
-    ok(cell.modifier === 'slime-3' || cell.modifier === 'slime-2', `got ${cell.modifier}`)
-    strictEqual(cell.tile, undefined, 'slime must eat the tile it lands on')
+    ok(cell.modifier === 'spreader-3' || cell.modifier === 'spreader-2', `got ${cell.modifier}`)
+    strictEqual(cell.tile, undefined, 'spreader must eat the tile it lands on')
     ok(
       outcome.events.some((event) => event.type === 'clear' && event.cause === 'obstacle'),
       'no clear event for the eaten tile',
@@ -245,7 +245,7 @@ describe('boss throws', () => {
   it('stops throwing once the boss is defeated', () => {
     const board = bossFixture('boss-1')
     const game = new Swap3Game({ seed: 7, board })
-    attachBoss(board, { hp: 1, throwEvery: 1, throws: 'cobweb-1' })
+    attachBoss(board, { hp: 1, throwEvery: 1, throws: 'cover-1' })
 
     const kill = game.trySwap({ x: 2, y: 3 }, { x: 2, y: 4 })
     ok(kill.accepted)
@@ -276,7 +276,7 @@ describe('boss throws', () => {
 describe('boss in the level system', () => {
   it('validates the boss field', () => {
     const level = loadLevel(bossLevel())
-    deepStrictEqual(level.boss, { hp: 2, throwEvery: 50, throws: 'cobweb-1' })
+    deepStrictEqual(level.boss, { hp: 2, throwEvery: 50, throws: 'cover-1' })
   })
 
   it('rejects broken boss configs', () => {
@@ -284,11 +284,11 @@ describe('boss in the level system', () => {
       throws(() => loadLevel({ ...bossLevel(), boss }), pattern)
     }
     bad(null, /must be an object/)
-    bad({ hp: 0, throwEvery: 1, throws: 'cobweb-1' }, /boss\.hp/)
-    bad({ hp: 100, throwEvery: 1, throws: 'cobweb-1' }, /boss\.hp/)
-    bad({ hp: 1.5, throwEvery: 1, throws: 'cobweb-1' }, /boss\.hp/)
-    bad({ hp: 3, throwEvery: 0, throws: 'cobweb-1' }, /boss\.throwEvery/)
-    bad({ hp: 3, throwEvery: 51, throws: 'cobweb-1' }, /boss\.throwEvery/)
+    bad({ hp: 0, throwEvery: 1, throws: 'cover-1' }, /boss\.hp/)
+    bad({ hp: 100, throwEvery: 1, throws: 'cover-1' }, /boss\.hp/)
+    bad({ hp: 1.5, throwEvery: 1, throws: 'cover-1' }, /boss\.hp/)
+    bad({ hp: 3, throwEvery: 0, throws: 'cover-1' }, /boss\.throwEvery/)
+    bad({ hp: 3, throwEvery: 51, throws: 'cover-1' }, /boss\.throwEvery/)
     bad({ hp: 3, throwEvery: 1, throws: '' }, /boss\.throws/)
     bad({ hp: 3, throwEvery: 1 }, /boss\.throws/)
     bad({ hp: 3, throwEvery: 1, throws: 'void' }, /cannot be thrown/)
@@ -299,7 +299,7 @@ describe('boss in the level system', () => {
     const withoutCell = { ...bossLevel(), obstacles: [] }
     throws(() => loadLevel(withoutCell), /no cell carries the 'boss' modifier/)
 
-    const withoutGoal = { ...bossLevel(), goals: [{ kind: 'collect', color: 'bat', count: 5 }] }
+    const withoutGoal = { ...bossLevel(), goals: [{ kind: 'collect', color: 'purple', count: 5 }] }
     throws(() => loadLevel(withoutGoal), /goal is missing/)
 
     const mismatched = {
@@ -373,7 +373,7 @@ describe('boss levels are playable', () => {
       moves: 5,
       goals: [{ kind: 'boss', hits: 99 }],
       starThresholds: [0, 0],
-      boss: { hp: 99, throwEvery: 1, throws: 'cobweb-1' },
+      boss: { hp: 99, throwEvery: 1, throws: 'cover-1' },
     }
     const { game } = createLevelGame(raw)
     playOut(game)
@@ -382,24 +382,24 @@ describe('boss levels are playable', () => {
     strictEqual(spreadEvents(game.log).length, 5)
   })
 
-  it('throws knob: gravestones land and replace the tile, level stays winnable', () => {
+  it('throws knob: blockers land and replace the tile, level stays winnable', () => {
     const raw: RawLevel = {
       ...bossLevel(),
       id: 62,
-      name: 'Gravestone Thrower',
+      name: 'Blocker Thrower',
       seed: 2026,
       goals: [{ kind: 'boss', hits: 2 }],
-      boss: { hp: 2, throwEvery: 3, throws: 'gravestone-1' },
+      boss: { hp: 2, throwEvery: 3, throws: 'blocker-1' },
     }
     const { game, tracker } = createLevelGame(raw)
     playOut(game)
     strictEqual(game.result, 'win')
     strictEqual(tracker.bossHits, 2)
     const spreads = spreadEvents(game.log)
-    ok(spreads.length > 0, 'no gravestones were thrown')
+    ok(spreads.length > 0, 'no blockers were thrown')
     ok(
-      spreads.some((event) => event.modifier === 'gravestone-1'),
-      'only non-gravestone throws happened',
+      spreads.some((event) => event.modifier === 'blocker-1'),
+      'only non-blocker throws happened',
     )
     ok(
       game.log.some((event) => event.type === 'clear' && event.cause === 'obstacle'),

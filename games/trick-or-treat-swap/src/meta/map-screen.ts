@@ -867,7 +867,7 @@ class AlleyMapScreen implements Screen {
   }
 
   #drawCandy(ctx: CanvasRenderingContext2D): void {
-    const img = tileSprites.candy
+    const img = tileSprites.pink
     for (const c of this.#candy) {
       const alpha = clamp01(1 - (c.age - 1.1) / 0.5)
       if (alpha <= 0) continue

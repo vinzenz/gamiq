@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L22 — Spring the Cages: the whole harvest is locked up. Five caged
@@ -22,7 +22,7 @@ export const level22 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
     { x: 2, y: 2, modifier: 'lock' },
     { x: 5, y: 2, modifier: 'lock' },
@@ -32,7 +32,7 @@ export const level22 = {
   ],
   goals: [
     { kind: 'clear-modifier', modifier: 'lock' },
-    { kind: 'collect', color: 'bat', count: 10 },
+    { kind: 'collect', color: 'purple', count: 10 },
   ],
   starThresholds: [2, 16],
 } satisfies RawLevel

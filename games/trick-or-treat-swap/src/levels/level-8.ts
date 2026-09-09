@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L8 — Headstone Row: Graveyard Path opens with the second obstacle. Three
@@ -13,15 +13,15 @@ export const level8 = {
   seed: 20268,
   moves: 16,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 2, y: 3, modifier: 'gravestone-1' },
-    { x: 3, y: 4, modifier: 'gravestone-1' },
-    { x: 4, y: 3, modifier: 'gravestone-1' },
+    { x: 2, y: 3, modifier: 'blocker-1' },
+    { x: 3, y: 4, modifier: 'blocker-1' },
+    { x: 4, y: 3, modifier: 'blocker-1' },
   ],
   goals: [
-    { kind: 'clear-modifier', modifier: 'gravestone-1' },
-    { kind: 'collect', color: 'bat', count: 14 },
+    { kind: 'clear-modifier', modifier: 'blocker-1' },
+    { kind: 'collect', color: 'purple', count: 14 },
   ],
   starThresholds: [3, 8],
 } satisfies RawLevel

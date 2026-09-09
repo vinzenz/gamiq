@@ -23,12 +23,12 @@ const deadBoard = (): Board => {
     rows.push(row)
   }
   return boardFromRows(rows, {
-    a: 'pumpkin',
-    b: 'ghost',
-    c: 'skull',
-    d: 'bat',
-    e: 'candy',
-    f: 'potion',
+    a: 'red',
+    b: 'blue',
+    c: 'ivory',
+    d: 'purple',
+    e: 'pink',
+    f: 'green',
   })
 }
 
@@ -108,13 +108,13 @@ describe('Swap3Game', () => {
     }
   })
 
-  it('creates a broom from a match-4 and reports it as an event', () => {
+  it('creates a sweep from a match-4 and reports it as an event', () => {
     const game = new Swap3Game({ seed: 5, board: run4Board() })
     const outcome = game.trySwap({ x: 2, y: 2 }, { x: 2, y: 1 })
     ok(outcome.accepted)
     const convert = outcome.events.find((e) => e.type === 'convert')
     ok(convert && convert.type === 'convert')
-    strictEqual(convert.powerup, 'broom')
+    strictEqual(convert.powerup, 'sweep')
     strictEqual(convert.tile.dir, 'h')
     deepStrictEqual(convert.at, { x: 2, y: 2 })
     ok(game.stats.powerupsCreated >= 1)
@@ -137,7 +137,7 @@ describe('Swap3Game', () => {
     const game = new Swap3Game({
       seed: 5,
       board: run4Board(),
-      onEval: (snap) => (snap.stats.cleared.skull >= 3 ? 'win' : undefined),
+      onEval: (snap) => (snap.stats.cleared.ivory >= 3 ? 'win' : undefined),
     })
     const outcome = game.trySwap({ x: 2, y: 2 }, { x: 2, y: 1 })
     ok(outcome.accepted)

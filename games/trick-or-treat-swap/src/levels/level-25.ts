@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L25 — Bramble Baskets: deliveries across a caged, webbed field. Three
@@ -21,17 +21,17 @@ export const level25 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, candy: 3, bat: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, pink: 3, purple: 2 },
   obstacles: [
     { x: 1, y: 3, modifier: 'lock' },
     { x: 6, y: 3, modifier: 'lock' },
     { x: 3, y: 4, modifier: 'lock' },
-    { x: 2, y: 5, modifier: 'cobweb-1' },
-    { x: 5, y: 5, modifier: 'cobweb-1' },
+    { x: 2, y: 5, modifier: 'cover-1' },
+    { x: 5, y: 5, modifier: 'cover-1' },
   ],
   goals: [
-    { kind: 'deliver', color: 'candy', count: 3 },
-    { kind: 'collect', color: 'ghost', count: 12 },
+    { kind: 'deliver', color: 'pink', count: 3 },
+    { kind: 'collect', color: 'blue', count: 12 },
   ],
   starThresholds: [8, 19],
 } satisfies RawLevel

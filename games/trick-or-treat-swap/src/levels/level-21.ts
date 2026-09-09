@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L21 — The Patch Gate: Pumpkin Patch opens with the lock in its easiest
@@ -12,15 +12,15 @@ export const level21 = {
   seed: 20281,
   moves: 18,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   obstacles: [
     { x: 2, y: 2, modifier: 'lock' },
     { x: 4, y: 2, modifier: 'lock' },
     { x: 3, y: 4, modifier: 'lock' },
   ],
   goals: [
-    { kind: 'collect', color: 'candy', count: 12 },
-    { kind: 'collect', color: 'pumpkin', count: 10 },
+    { kind: 'collect', color: 'pink', count: 12 },
+    { kind: 'collect', color: 'red', count: 10 },
   ],
   starThresholds: [6, 10],
 } satisfies RawLevel

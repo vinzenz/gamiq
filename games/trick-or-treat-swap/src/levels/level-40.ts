@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L40 — Count Dracula: the last door on the alley. The count sits behind
@@ -22,16 +22,16 @@ export const level40 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
-    { x: 3, y: 3, modifier: 'cobweb-3' },
+    { x: 3, y: 3, modifier: 'cover-3' },
     { x: 4, y: 3, modifier: 'boss' },
-    { x: 5, y: 3, modifier: 'cobweb-3' },
+    { x: 5, y: 3, modifier: 'cover-3' },
   ],
   boss: { hp: 16, throwEvery: 3, throws: 'lock' },
   goals: [
     { kind: 'boss', hits: 16 },
-    { kind: 'collect', color: 'pumpkin', count: 15 },
+    { kind: 'collect', color: 'red', count: 15 },
   ],
   starThresholds: [0, 18],
 } satisfies RawLevel

@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L10 — Basket at the Gate: the deliver lesson. Candy matched on the bottom
@@ -12,14 +12,14 @@ export const level10 = {
   seed: 20270,
   moves: 30,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 4 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 4 },
   obstacles: [
-    { x: 1, y: 5, modifier: 'cobweb-2' },
-    { x: 5, y: 5, modifier: 'cobweb-2' },
+    { x: 1, y: 5, modifier: 'cover-2' },
+    { x: 5, y: 5, modifier: 'cover-2' },
   ],
   goals: [
-    { kind: 'deliver', color: 'candy', count: 2 },
-    { kind: 'collect', color: 'ghost', count: 12 },
+    { kind: 'deliver', color: 'pink', count: 2 },
+    { kind: 'collect', color: 'blue', count: 12 },
   ],
   starThresholds: [2, 6],
 } satisfies RawLevel

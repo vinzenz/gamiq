@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L26 — Harvest Hoard: the pre-boss gauntlet. Locks pinch the top and the
@@ -12,18 +12,18 @@ export const level26 = {
   seed: 20286,
   moves: 24,
   shape: ['.......', '.......', '.......', '#.....#', '#.....#', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2, green: 2 },
   obstacles: [
     { x: 1, y: 1, modifier: 'lock' },
     { x: 5, y: 1, modifier: 'lock' },
     { x: 2, y: 3, modifier: 'lock' },
     { x: 4, y: 3, modifier: 'lock' },
-    { x: 1, y: 6, modifier: 'slime-3' },
-    { x: 5, y: 6, modifier: 'slime-3' },
+    { x: 1, y: 6, modifier: 'spreader-3' },
+    { x: 5, y: 6, modifier: 'spreader-3' },
   ],
   goals: [
-    { kind: 'collect', color: 'candy', count: 13 },
-    { kind: 'collect', color: 'skull', count: 13 },
+    { kind: 'collect', color: 'pink', count: 13 },
+    { kind: 'collect', color: 'ivory', count: 13 },
   ],
   starThresholds: [1, 10],
 } satisfies RawLevel

@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L19 — Hex on the Wind: the pre-boss gauntlet. Ice caps three lanes up
@@ -12,18 +12,18 @@ export const level19 = {
   seed: 20279,
   moves: 20,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '#.....#', '#.....#'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, green: 2 },
   obstacles: [
     { x: 1, y: 2, modifier: 'ice' },
     { x: 3, y: 2, modifier: 'ice' },
     { x: 5, y: 2, modifier: 'ice' },
-    { x: 2, y: 4, modifier: 'cobweb-2' },
-    { x: 4, y: 4, modifier: 'cobweb-2' },
+    { x: 2, y: 4, modifier: 'cover-2' },
+    { x: 4, y: 4, modifier: 'cover-2' },
     { x: 3, y: 5, modifier: 'ice' },
   ],
   goals: [
-    { kind: 'collect', color: 'pumpkin', count: 17 },
-    { kind: 'collect', color: 'bat', count: 17 },
+    { kind: 'collect', color: 'red', count: 17 },
+    { kind: 'collect', color: 'purple', count: 17 },
   ],
   starThresholds: [4, 12],
 } satisfies RawLevel

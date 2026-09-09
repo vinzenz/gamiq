@@ -22,5 +22,7 @@ const BOSS_ART: readonly string[] = [
 
 /** Boss portrait for the chapter a level belongs to. */
 export function bossArtFor(levelIndex: number): string {
-  return BOSS_ART[chapterOf(levelIndex)] ?? BOSS_ART[0]!
+  const art = BOSS_ART[chapterOf(levelIndex)] ?? BOSS_ART[0]
+  if (!art) throw new Error('no boss art configured')
+  return art
 }

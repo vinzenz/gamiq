@@ -33,25 +33,25 @@ export function typeMatrix(board: Board): (TileType | undefined)[][] {
   return rows
 }
 
-/** Match-4 fixture: swapping (2,2) with (2,1) lines up four skulls. */
+/** Match-4 fixture: swapping (2,2) with (2,1) lines up four ivorys. */
 export const RUN4_GRID = ['abcde', 'cdXab', 'XXbXa', 'bcaed', 'decab']
 
-/** Match-5 fixture: swapping (2,2) with (2,1) lines up five skulls. */
+/** Match-5 fixture: swapping (2,2) with (2,1) lines up five ivorys. */
 export const RUN5_GRID = ['abcde', 'cdXab', 'XXbXX', 'bcaed', 'decab']
 
-/** L/T fixture: swapping (2,2) with (3,2) forms an L of five skulls. */
+/** L/T fixture: swapping (2,2) with (3,2) forms an L of five ivorys. */
 export const LT_GRID = ['abXde', 'caXbd', 'XXbXc', 'dcaeb', 'eddca']
 
-/** 2×2 fixture: swapping (1,1) with (1,2) closes the square of skulls. */
+/** 2×2 fixture: swapping (1,1) with (1,2) closes the square of ivorys. */
 export const SQUARE_GRID = ['XXabc', 'Xbdea', 'aXcad', 'bcebe', 'cdadb']
 
-/** Palette for the fixtures above (capital X is the skull pair colour). */
+/** Palette for the fixtures above (capital X is the ivory pair colour). */
 export const FIXTURE_PALETTE = {
-  a: 'pumpkin',
-  b: 'ghost',
-  c: 'skull',
-  d: 'bat',
-  e: 'candy',
-  f: 'potion',
-  X: 'skull',
+  a: 'red',
+  b: 'blue',
+  c: 'ivory',
+  d: 'purple',
+  e: 'pink',
+  f: 'green',
+  X: 'ivory',
 } as const

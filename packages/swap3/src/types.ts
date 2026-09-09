@@ -1,14 +1,14 @@
 /** The six base tile types, matching the art in `ASSETS.md`. */
-export const TILE_TYPES = ['pumpkin', 'ghost', 'skull', 'bat', 'candy', 'potion'] as const
+export const TILE_TYPES = ['red', 'blue', 'ivory', 'purple', 'pink', 'green'] as const
 export type TileType = (typeof TILE_TYPES)[number]
 
 /**
  * Power-up kinds, each created by a distinct match shape:
- * broom ← match-4, bomb ← L/T match-5, cauldron ← straight match-5,
- * little-ghost ← 2×2 square. Their board effects live in the power-ups ticket
+ * sweep ← match-4, blast ← L/T match-5, prism ← straight match-5,
+ * homing ← 2×2 square. Their board effects live in the power-ups ticket
  * and plug in through the registry (`registry.ts`).
  */
-export const POWERUPS = ['broom', 'bomb', 'cauldron', 'little-ghost'] as const
+export const POWERUPS = ['sweep', 'blast', 'prism', 'homing'] as const
 export type PowerupKind = (typeof POWERUPS)[number]
 
 export interface Pos {
@@ -16,7 +16,7 @@ export interface Pos {
   y: number
 }
 
-/** Row/column sweep direction of a match, stored on brooms. */
+/** Row/column sweep direction of a match, stored on sweeps. */
 export type SweepDir = 'h' | 'v'
 
 /**
@@ -29,13 +29,13 @@ export interface Tile {
   type: TileType
   powerup?: PowerupKind
   dir?: SweepDir
-  /** Cauldron only: the colour it is charged to clear on its next detonation. */
+  /** Prism only: the colour it is charged to clear on its next detonation. */
   charge?: TileType
 }
 
 /**
- * Board cell. `modifier` is the extension seam for obstacles (cobweb,
- * gravestone, cursed ice, lock, slime): the behaviour of each modifier id is
+ * Board cell. `modifier` is the extension seam for obstacles (cover,
+ * blocker, cursed ice, lock, spreader): the behaviour of each modifier id is
  * defined in the registry, so obstacles can be added without touching core.
  */
 export interface Cell {
@@ -117,5 +117,5 @@ export interface GameStats {
 
 export function emptyClearedRecord(): Record<TileType, number> {
   // Keep in sync with TILE_TYPES.
-  return { pumpkin: 0, ghost: 0, skull: 0, bat: 0, candy: 0, potion: 0 }
+  return { red: 0, blue: 0, ivory: 0, purple: 0, pink: 0, green: 0 }
 }

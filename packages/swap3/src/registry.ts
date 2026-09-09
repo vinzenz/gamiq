@@ -50,7 +50,7 @@ const clearSelf: PowerupEffect = (ctx) => [ctx.at]
 for (const kind of POWERUPS) registerPowerupEffect(kind, clearSelf)
 
 /**
- * Extension point for obstacles (cobweb, gravestone, cursed ice, lock, slime).
+ * Extension point for obstacles (cover, blocker, cursed ice, lock, spreader).
  * A modifier id is attached to cells in level data; these predicates are asked
  * by the core at every relevant decision point, so new obstacles register here
  * without any core changes.
@@ -144,7 +144,7 @@ export function planTapActivation(board: Board, at: Pos): ActivationPlan | null 
 }
 
 /**
- * Where homing effects (little ghost) should hit, e.g. collect-goal colours or
+ * Where homing effects (little blue) should hit, e.g. collect-goal colours or
  * obstacles. Registered by the goal system; without one, homing effects fall
  * back to the nearest tile.
  */
@@ -217,7 +217,7 @@ function matchGroupAt(
  * events. `direct` is the full clear footprint (matches plus power-up
  * expansions); `matches` are the match shapes that started the pass, whose
  * cells double as the adjacency source for match-triggered obstacles
- * (gravestone, cursed ice, lock, slime). Each obstacle cell is notified at
+ * (blocker, cursed ice, lock, spreader). Each obstacle cell is notified at
  * most once per pass — direct hits first, then one adjacent match.
  */
 export function applyObstacleHits(
@@ -266,7 +266,7 @@ export function applyObstacleHits(
 
 /**
  * Hooks run after every accepted move has been resolved to rest, before the
- * move event (slime spread …). They may mutate the board and emit events.
+ * move event (spreader spread …). They may mutate the board and emit events.
  */
 export type TurnHook = (board: Board, rng: Rng, emit: (event: GameEvent) => void) => void
 

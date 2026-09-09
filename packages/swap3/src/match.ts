@@ -135,7 +135,7 @@ function shapeFromGroup(group: Run[]): MatchedShape | null {
 
   // Precedence: straight-5+ beats L/T, L/T beats match-4.
   if (longest >= 5) {
-    return { ...base, shape: 'run5', powerup: 'cauldron', spawn: midCell(longestRun) }
+    return { ...base, shape: 'run5', powerup: 'prism', spawn: midCell(longestRun) }
   }
   if (hasH && hasV && cells.length >= 5) {
     const hKeys = new Set(group.filter((r) => r.dir === 'h').flatMap((r) => r.cells.map(posKey)))
@@ -144,7 +144,7 @@ function shapeFromGroup(group: Run[]): MatchedShape | null {
     return {
       ...base,
       shape: 'intersection',
-      powerup: 'bomb',
+      powerup: 'blast',
       spawn: crossing ?? midCell(longestRun),
     }
   }
@@ -152,7 +152,7 @@ function shapeFromGroup(group: Run[]): MatchedShape | null {
     return {
       ...base,
       shape: 'run4',
-      powerup: 'broom',
+      powerup: 'sweep',
       spawn: midCell(longestRun),
       dir: longestRun.dir,
     }
@@ -161,9 +161,9 @@ function shapeFromGroup(group: Run[]): MatchedShape | null {
 }
 
 /**
- * Detect every match shape on the board: 3-in-a-row, match-4 (broom),
- * L/T match-5 (bomb), straight match-5 (cauldron) and 2×2 squares
- * (little-ghost). Runs are detected first; squares only form from cells no
+ * Detect every match shape on the board: 3-in-a-row, match-4 (sweep),
+ * L/T match-5 (blast), straight match-5 (prism) and 2×2 squares
+ * (homing). Runs are detected first; squares only form from cells no
  * run has claimed, so overlapping shapes resolve to the bigger one.
  */
 export function detectShapes(board: Board): MatchedShape[] {
@@ -193,7 +193,7 @@ export function detectShapes(board: Board): MatchedShape[] {
           cells: corners,
           tileType: type,
           shape: 'square',
-          powerup: 'little-ghost',
+          powerup: 'homing',
           spawn: { x, y },
         })
         for (const c of corners) claimed.add(posKey(c))

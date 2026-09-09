@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L9 — Mossy Slabs: gravestones gain a second hit point and the webs come
@@ -21,19 +21,19 @@ export const level9 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   obstacles: [
-    { x: 2, y: 2, modifier: 'gravestone-2' },
-    { x: 5, y: 2, modifier: 'gravestone-2' },
-    { x: 1, y: 4, modifier: 'gravestone-1' },
-    { x: 6, y: 4, modifier: 'gravestone-1' },
-    { x: 3, y: 5, modifier: 'cobweb-1' },
-    { x: 4, y: 5, modifier: 'cobweb-1' },
+    { x: 2, y: 2, modifier: 'blocker-2' },
+    { x: 5, y: 2, modifier: 'blocker-2' },
+    { x: 1, y: 4, modifier: 'blocker-1' },
+    { x: 6, y: 4, modifier: 'blocker-1' },
+    { x: 3, y: 5, modifier: 'cover-1' },
+    { x: 4, y: 5, modifier: 'cover-1' },
   ],
   goals: [
-    { kind: 'clear-modifier', modifier: 'gravestone-1' },
-    { kind: 'clear-modifier', modifier: 'gravestone-2' },
-    { kind: 'collect', color: 'candy', count: 16 },
+    { kind: 'clear-modifier', modifier: 'blocker-1' },
+    { kind: 'clear-modifier', modifier: 'blocker-2' },
+    { kind: 'collect', color: 'pink', count: 16 },
   ],
   starThresholds: [2, 8],
 } satisfies RawLevel

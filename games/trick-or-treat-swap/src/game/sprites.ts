@@ -1,3 +1,5 @@
+import type { PowerupKind, TileType } from '@gamiq/swap3/types'
+import treatBagUrl from '../../assets/meta/treat-bag.webp'
 import cobweb1Url from '../../assets/sprites/obstacle-cobweb-1.webp'
 import cobweb2Url from '../../assets/sprites/obstacle-cobweb-2.webp'
 import cobweb3Url from '../../assets/sprites/obstacle-cobweb-3.webp'
@@ -11,22 +13,20 @@ import littleGhostUrl from '../../assets/sprites/power-little-ghost.webp'
 import bombUrl from '../../assets/sprites/power-pumpkin-bomb.webp'
 import batUrl from '../../assets/sprites/tile-bat.webp'
 import candyUrl from '../../assets/sprites/tile-candy.webp'
-import treatBagUrl from '../../assets/meta/treat-bag.webp'
 import ghostUrl from '../../assets/sprites/tile-ghost.webp'
 import potionUrl from '../../assets/sprites/tile-potion.webp'
 import pumpkinUrl from '../../assets/sprites/tile-pumpkin.webp'
 import skullUrl from '../../assets/sprites/tile-skull.webp'
-import type { PowerupKind, TileType } from '../engine/types.ts'
 import { roundRectPath } from './draw.ts'
 
 /** Fallback fill and particle colour per tile type (from the style block). */
 export const TILE_COLORS: Record<TileType, string> = {
-  pumpkin: '#ff8a2a',
-  ghost: '#a8d8f8',
-  skull: '#e8e0cf',
-  bat: '#9b6dd6',
-  candy: '#ff7ac2',
-  potion: '#6fe38a',
+  red: '#ff8a2a',
+  blue: '#a8d8f8',
+  ivory: '#e8e0cf',
+  purple: '#9b6dd6',
+  pink: '#ff7ac2',
+  green: '#6fe38a',
 }
 
 function loadImage(src: string): HTMLImageElement {
@@ -41,31 +41,31 @@ export function loadSprite(src: string): HTMLImageElement {
 }
 
 export const TILE_URLS: Record<TileType, string> = {
-  pumpkin: pumpkinUrl,
-  ghost: ghostUrl,
-  skull: skullUrl,
-  bat: batUrl,
-  candy: candyUrl,
-  potion: potionUrl,
+  red: pumpkinUrl,
+  blue: ghostUrl,
+  ivory: skullUrl,
+  purple: batUrl,
+  pink: candyUrl,
+  green: potionUrl,
 }
 
 export const tileSprites = {
-  pumpkin: loadImage(pumpkinUrl),
-  ghost: loadImage(ghostUrl),
-  skull: loadImage(skullUrl),
-  bat: loadImage(batUrl),
-  candy: loadImage(candyUrl),
-  potion: loadImage(potionUrl),
+  red: loadImage(pumpkinUrl),
+  blue: loadImage(ghostUrl),
+  ivory: loadImage(skullUrl),
+  purple: loadImage(batUrl),
+  pink: loadImage(candyUrl),
+  green: loadImage(potionUrl),
 } satisfies Record<TileType, HTMLImageElement>
 
 /** Treat basket on the board's bottom row for deliver goals. */
 export const treatBagSprite = loadImage(treatBagUrl)
 
 export const powerupSprites: Record<PowerupKind, HTMLImageElement> = {
-  broom: loadImage(broomUrl),
-  bomb: loadImage(bombUrl),
-  cauldron: loadImage(cauldronUrl),
-  'little-ghost': loadImage(littleGhostUrl),
+  sweep: loadImage(broomUrl),
+  blast: loadImage(bombUrl),
+  prism: loadImage(cauldronUrl),
+  homing: loadImage(littleGhostUrl),
 }
 
 const cobwebSprites = [loadImage(cobweb1Url), loadImage(cobweb2Url), loadImage(cobweb3Url)]
@@ -74,7 +74,7 @@ const iceImg = loadImage(iceUrl)
 const lockImg = loadImage(lockUrl)
 const slimeImg = loadImage(slimeUrl)
 
-/** `cobweb-2` → `{ root: 'cobweb', count: 2 }`; `ice` → `{ root: 'ice', count: 0 }`. */
+/** `cover-2` → `{ root: 'cover', count: 2 }`; `ice` → `{ root: 'ice', count: 0 }`. */
 function parseModifier(id: string): { root: string; count: number } {
   const m = /^([a-z]+)(?:-(\d+))?$/.exec(id)
   return { root: m?.[1] ?? id, count: Number(m?.[2] ?? 0) }
@@ -89,15 +89,15 @@ function cobwebFor(count: number): HTMLImageElement | undefined {
 export function modifierSprite(modifier: string): HTMLImageElement | undefined {
   const { root, count } = parseModifier(modifier)
   switch (root) {
-    case 'cobweb':
+    case 'cover':
       return cobwebFor(count)
-    case 'gravestone':
+    case 'blocker':
       return gravestoneImg
     case 'ice':
       return iceImg
     case 'lock':
       return lockImg
-    case 'slime':
+    case 'spreader':
       return slimeImg
     default:
       return undefined
@@ -108,15 +108,15 @@ export function modifierSprite(modifier: string): HTMLImageElement | undefined {
 export function modifierSpriteUrl(modifier: string): string | undefined {
   const { root, count } = parseModifier(modifier)
   switch (root) {
-    case 'cobweb':
+    case 'cover':
       return cobwebFor(count)?.src
-    case 'gravestone':
+    case 'blocker':
       return gravestoneUrl
     case 'ice':
       return iceUrl
     case 'lock':
       return lockUrl
-    case 'slime':
+    case 'spreader':
       return slimeUrl
     default:
       return undefined
@@ -124,10 +124,10 @@ export function modifierSpriteUrl(modifier: string): string | undefined {
 }
 
 export const POWERUP_LABELS: Record<PowerupKind, string> = {
-  broom: "Witch's Broom!",
-  bomb: 'Pumpkin Bomb!',
-  cauldron: 'Magic Cauldron!',
-  'little-ghost': 'Little Ghost!',
+  sweep: "Witch's Broom!",
+  blast: 'Pumpkin Bomb!',
+  prism: 'Magic Cauldron!',
+  homing: 'Little Ghost!',
 }
 
 export interface SpriteDrawOptions {

@@ -273,7 +273,7 @@ export class Fx {
       const bob = Math.sin(f.age * 22) * 4
       drawSprite(
         ctx,
-        powerupSprites['little-ghost'],
+        powerupSprites.homing,
         f.x0 + (f.x1 - f.x0) * t,
         f.y0 + (f.y1 - f.y0) * t + bob,
         40,

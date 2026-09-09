@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L14 — Frostbite Fen: Witch's Hollow opens with cursed ice in its easiest
@@ -12,7 +12,7 @@ export const level14 = {
   seed: 20274,
   moves: 11,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, pink: 2, green: 2 },
   obstacles: [
     { x: 2, y: 3, modifier: 'ice' },
     { x: 4, y: 3, modifier: 'ice' },
@@ -20,8 +20,8 @@ export const level14 = {
     { x: 5, y: 5, modifier: 'ice' },
   ],
   goals: [
-    { kind: 'collect', color: 'potion', count: 12 },
-    { kind: 'collect', color: 'candy', count: 12 },
+    { kind: 'collect', color: 'green', count: 12 },
+    { kind: 'collect', color: 'pink', count: 12 },
   ],
   starThresholds: [1, 5],
 } satisfies RawLevel

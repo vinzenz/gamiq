@@ -26,8 +26,8 @@ const VOID = 'void'
 registerCellModifier({ id: VOID, gravityBarrier: true })
 
 /**
- * Goal list entries. The four obstacle flavours from the epic (cobwebs,
- * gravestones, cursed ice, cages) share one kind and differ only in modifier
+ * Goal list entries. The four obstacle flavours from the epic (covers,
+ * blockers, cursed ice, cages) share one kind and differ only in modifier
  * id; the behaviour of peeling/breaking/freeing lives with the obstacles
  * ticket, the goal just watches the board for leftover cells.
  */
@@ -520,7 +520,7 @@ export class GoalTracker {
     for (const [id, n] of left) {
       this.#modifierLeft.set(id, n)
       // Totals grow with the highest count seen, so obstacles that arrive
-      // mid-level (slime, boss spawns) still count toward their goal.
+      // mid-level (spreader, boss spawns) still count toward their goal.
       this.#modifierTotal.set(id, Math.max(this.#modifierTotal.get(id) ?? 0, n))
     }
   }

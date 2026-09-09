@@ -9,30 +9,30 @@ import type { Board, Cell, GameEvent, Pos, Tile } from './types.ts'
  *
  * | id                          | obstacle    | rules |
  * |-----------------------------|-------------|-------|
- * | `cobweb-1` … `cobweb-3`     | Cobweb      | 1–3 layers over a tile; a match on the tile or a power-up covering it peels one layer, the tile survives. |
- * | `gravestone-1` … `-3`       | Gravestone  | Immovable occupant without a tile; adjacent matches and power-up footprints hit it (1–3 hits to break). No tile spawns there until it breaks. |
+ * | `cover-1` … `cover-3`     | Cover      | 1–3 layers over a tile; a match on the tile or a power-up covering it peels one layer, the tile survives. |
+ * | `blocker-1` … `-3`       | Blocker  | Immovable occupant without a tile; adjacent matches and power-up footprints hit it (1–3 hits to break). No tile spawns there until it breaks. |
  * | `ice`                       | Cursed Ice  | Frozen tile: can't be swapped, matched or moved. An adjacent match or a power-up footprint cracks it free. |
  * | `lock`                      | Lock        | Locks its tile in place: can't be swapped or matched. Freed by an adjacent match of the locked tile's colour, or by a power-up footprint. |
- * | `slime-1` … `slime-N`       | Slime       | Goo occupying a cell (no tile, nothing spawns). A match next to it or a power-up footprint dissolves it; otherwise the countdown in the id ticks down every move and at 1 it spreads onto a random adjacent plain cell, eating its tile. |
+ * | `spreader-1` … `spreader-N`       | Spreader       | Goo occupying a cell (no tile, nothing spawns). A match next to it or a power-up footprint dissolves it; otherwise the countdown in the id ticks down every move and at 1 it spreads onto a random adjacent plain cell, eating its tile. |
  *
  * Layer/hit counts are part of the id so a board (and its level JSON) stays a
  * plain serialisable tree. Every hit emits an `obstacle` event so the renderer
  * can animate peel/crack/break/spread.
  */
 
-export const COBWEB_LAYERS = 3
-export const GRAVESTONE_HITS = 3
-/** Moves a slime cell needs to spread (also the countdown it resets to). */
-export const SLIME_SPREAD_MOVES = 3
+export const COVER_LAYERS = 3
+export const BLOCKER_HITS = 3
+/** Moves a spreader cell needs to spread (also the countdown it resets to). */
+export const SPREADER_SPREAD_MOVES = 3
 
 const NUMBERED = /^([a-z]+)-([1-9][0-9]*)$/
 
-/** Obstacle family of a modifier id (`cobweb-2` → `cobweb`, `ice` → `ice`). */
+/** Obstacle family of a modifier id (`cover-2` → `cover`, `ice` → `ice`). */
 function modifierRoot(id: string): string {
   return NUMBERED.exec(id)?.[1] ?? id
 }
 
-/** State counter of a modifier id (`cobweb-2` → 2, `ice` → 0). */
+/** State counter of a modifier id (`cover-2` → 2, `ice` → 0). */
 function modifierCount(id: string): number {
   return Number(NUMBERED.exec(id)?.[2] ?? 0)
 }
@@ -51,9 +51,9 @@ const emitDestroy = (hit: ObstacleHit, id: string, emit: (event: GameEvent) => v
   emit({ type: 'obstacle', at: hit.at, modifier: id, action: 'destroy' })
 }
 
-// — Cobweb ——————————————————————————————————————————————————————————————————
+// — Cover ——————————————————————————————————————————————————————————————————
 
-function hitCobweb(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
+function hitCover(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
   // Only clears landing on the webbed tile itself peel; neighbouring matches
   // leave the web alone.
   if (!hit.direct) return
@@ -64,12 +64,12 @@ function hitCobweb(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
     emitDestroy(hit, id, emit)
     return
   }
-  emitDamage(hit, setCount(hit.cell, 'cobweb', layers - 1), emit)
+  emitDamage(hit, setCount(hit.cell, 'cover', layers - 1), emit)
 }
 
-// — Gravestone ———————————————————————————————————————————————————————————————————
+// — Blocker ———————————————————————————————————————————————————————————————————
 
-function hitGravestone(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
+function hitBlocker(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
   const id = hit.cell.modifier ?? ''
   const hits = modifierCount(id)
   if (hits <= 1) {
@@ -79,7 +79,7 @@ function hitGravestone(hit: ObstacleHit, emit: (event: GameEvent) => void): void
     emitDestroy(hit, id, emit)
     return
   }
-  emitDamage(hit, setCount(hit.cell, 'gravestone', hits - 1), emit)
+  emitDamage(hit, setCount(hit.cell, 'blocker', hits - 1), emit)
 }
 
 // — Cursed Ice / Lock ———————————————————————————————————————————————————————
@@ -100,15 +100,15 @@ function hitLock(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
   emitDestroy(hit, id, emit)
 }
 
-// — Slime ————————————————————————————————————————————————————————————————————
+// — Spreader ————————————————————————————————————————————————————————————————————
 
-function hitSlime(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
+function hitSpreader(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
   const id = hit.cell.modifier ?? ''
   hit.cell.modifier = undefined
   emitDestroy(hit, id, emit)
 }
 
-const SLIME_NEIGHBOURS: readonly Pos[] = [
+const SPREADER_NEIGHBOURS: readonly Pos[] = [
   { x: 1, y: 0 },
   { x: -1, y: 0 },
   { x: 0, y: 1 },
@@ -116,30 +116,30 @@ const SLIME_NEIGHBOURS: readonly Pos[] = [
 ]
 
 /**
- * Per-move slime behaviour: every surviving goo cell ticks its countdown, and
+ * Per-move spreader behaviour: every surviving goo cell ticks its countdown, and
  * at 1 it spreads onto a random adjacent plain cell (no modifier), eating a
- * tile that may sit there. Blocked-in slimes retry on the next move. Runs
- * after resolution, so a match that happened next to a slime has already
+ * tile that may sit there. Blocked-in spreaders retry on the next move. Runs
+ * after resolution, so a match that happened next to a spreader has already
  * dissolved it before it could spread.
  */
-function spreadSlime(board: Board, rng: Rng, emit: (event: GameEvent) => void): void {
-  const slimes: { at: Pos; cell: Cell; count: number }[] = []
+function spreadSpreader(board: Board, rng: Rng, emit: (event: GameEvent) => void): void {
+  const spreaders: { at: Pos; cell: Cell; count: number }[] = []
   for (let y = 0; y < board.height; y++) {
     for (let x = 0; x < board.width; x++) {
       const cell = board.cells[y * board.width + x]
-      if (!cell?.modifier || modifierRoot(cell.modifier) !== 'slime') continue
-      slimes.push({ at: { x, y }, cell, count: modifierCount(cell.modifier) })
+      if (!cell?.modifier || modifierRoot(cell.modifier) !== 'spreader') continue
+      spreaders.push({ at: { x, y }, cell, count: modifierCount(cell.modifier) })
     }
   }
 
-  for (const slime of slimes) {
-    if (slime.count > 1) {
-      setCount(slime.cell, 'slime', slime.count - 1)
+  for (const spreader of spreaders) {
+    if (spreader.count > 1) {
+      setCount(spreader.cell, 'spreader', spreader.count - 1)
       continue
     }
     const targets: Pos[] = []
-    for (const n of SLIME_NEIGHBOURS) {
-      const p = { x: slime.at.x + n.x, y: slime.at.y + n.y }
+    for (const n of SPREADER_NEIGHBOURS) {
+      const p = { x: spreader.at.x + n.x, y: spreader.at.y + n.y }
       if (p.x < 0 || p.y < 0 || p.x >= board.width || p.y >= board.height) continue
       const cell = board.cells[p.y * board.width + p.x]
       if (!cell || cell.modifier) continue
@@ -154,14 +154,14 @@ function spreadSlime(board: Board, rng: Rng, emit: (event: GameEvent) => void): 
       cell.tile = undefined
       emit({ type: 'clear', cause: 'obstacle', cells: [{ at: target, tile: eaten }] })
     }
-    cell.modifier = `slime-${SLIME_SPREAD_MOVES}`
+    cell.modifier = `spreader-${SPREADER_SPREAD_MOVES}`
     emit({
       type: 'obstacle',
       at: target,
       modifier: cell.modifier,
       action: 'spread',
     })
-    setCount(slime.cell, 'slime', SLIME_SPREAD_MOVES)
+    setCount(spreader.cell, 'spreader', SPREADER_SPREAD_MOVES)
   }
 }
 
@@ -176,18 +176,18 @@ const frozen = {
 
 // Webs are sticky: the tile under a web is glued in place and tiles above
 // stack on the cell, so a web never ends up over nothing.
-for (let layers = 1; layers <= COBWEB_LAYERS; layers++) {
-  registerCellModifier({ id: `cobweb-${layers}`, gravityBarrier: true, onHit: hitCobweb })
+for (let layers = 1; layers <= COVER_LAYERS; layers++) {
+  registerCellModifier({ id: `cover-${layers}`, gravityBarrier: true, onHit: hitCover })
 }
-for (let hits = 1; hits <= GRAVESTONE_HITS; hits++) {
-  registerCellModifier({ id: `gravestone-${hits}`, gravityBarrier: true, onHit: hitGravestone })
+for (let hits = 1; hits <= BLOCKER_HITS; hits++) {
+  registerCellModifier({ id: `blocker-${hits}`, gravityBarrier: true, onHit: hitBlocker })
 }
 registerCellModifier({ id: 'ice', ...frozen, onHit: hitIce })
 registerCellModifier({ id: 'lock', ...frozen, onHit: hitLock })
-for (let moves = 1; moves <= SLIME_SPREAD_MOVES; moves++) {
-  registerCellModifier({ id: `slime-${moves}`, gravityBarrier: true, onHit: hitSlime })
+for (let moves = 1; moves <= SPREADER_SPREAD_MOVES; moves++) {
+  registerCellModifier({ id: `spreader-${moves}`, gravityBarrier: true, onHit: hitSpreader })
 }
-registerTurnHook(spreadSlime)
+registerTurnHook(spreadSpreader)
 
 // — Level-data helpers ———————————————————————————————————————————————————————
 
@@ -204,14 +204,14 @@ function checkedCount(value: number, max: number, name: string): number {
   return value
 }
 
-/** Cobwebbed tile: `layers` 1–3 layers of web over the (optional) tile. */
-export function cobwebCell(layers: number, tile?: Tile): Cell {
-  return cellWith(`cobweb-${checkedCount(layers, COBWEB_LAYERS, 'cobweb layers')}`, tile)
+/** Coverbed tile: `layers` 1–3 layers of web over the (optional) tile. */
+export function coverCell(layers: number, tile?: Tile): Cell {
+  return cellWith(`cover-${checkedCount(layers, COVER_LAYERS, 'cover layers')}`, tile)
 }
 
-/** Gravestone with `hits` 1–3 hit points left; never holds a tile. */
-export function gravestoneCell(hits = GRAVESTONE_HITS): Cell {
-  return cellWith(`gravestone-${checkedCount(hits, GRAVESTONE_HITS, 'gravestone hits')}`)
+/** Blocker with `hits` 1–3 hit points left; never holds a tile. */
+export function blockerCell(hits = BLOCKER_HITS): Cell {
+  return cellWith(`blocker-${checkedCount(hits, BLOCKER_HITS, 'blocker hits')}`)
 }
 
 /** Frozen tile: keeps the tile, blocks swapping/matching/movement. */
@@ -224,7 +224,7 @@ export function lockCell(tile: Tile): Cell {
   return cellWith('lock', tile)
 }
 
-/** Slime patch with `movesLeft` moves until it spreads (1–SLIME_SPREAD_MOVES). */
-export function slimeCell(movesLeft = SLIME_SPREAD_MOVES): Cell {
-  return cellWith(`slime-${checkedCount(movesLeft, SLIME_SPREAD_MOVES, 'slime moves')}`)
+/** Spreader patch with `movesLeft` moves until it spreads (1–SPREADER_SPREAD_MOVES). */
+export function spreaderCell(movesLeft = SPREADER_SPREAD_MOVES): Cell {
+  return cellWith(`spreader-${checkedCount(movesLeft, SPREADER_SPREAD_MOVES, 'spreader moves')}`)
 }

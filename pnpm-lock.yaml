@@ -12,6 +12,22 @@ importers:
         specifier: ^2.5.11
         version: 2.5.11
 
+  games/christmas-gift-glitch:
+    dependencies:
+      '@gamiq/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@gamiq/swap3':
+        specifier: workspace:*
+        version: link:../../packages/swap3
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.2.2
+        version: 8.2.2
+
   games/tap-rush:
     dependencies:
       '@gamiq/shared':
@@ -30,6 +46,9 @@ importers:
       '@gamiq/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@gamiq/swap3':
+        specifier: workspace:*
+        version: link:../../packages/swap3
     devDependencies:
       typescript:
         specifier: ^7.0.2
@@ -39,6 +58,12 @@ importers:
         version: 8.2.2
 
   packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
+  packages/swap3:
     devDependencies:
       typescript:
         specifier: ^7.0.2

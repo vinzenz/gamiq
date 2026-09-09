@@ -12,7 +12,8 @@
     "test": "node --test \"src/**/*.test.ts\""
   },
   "dependencies": {
-    "@gamiq/shared": "workspace:*"
+    "@gamiq/shared": "workspace:*",
+    "@gamiq/swap3": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^7.0.2",

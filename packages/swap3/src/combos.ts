@@ -5,16 +5,16 @@
  *
  * | Swap                  | Result                                                                   |
  * |-----------------------|--------------------------------------------------------------------------|
- * | broom + broom         | Cross Sweep — row AND column through the pair                            |
- * | broom + little-ghost  | ghost carries the broom to the densest row/column and sweeps it          |
- * | broom + bomb          | Triple Sweep — 3 rows + 3 columns around the pair                        |
- * | broom + cauldron      | most common colour → launched brooms                                     |
- * | ghost + ghost         | three little ghosts hit three objective tiles                            |
- * | ghost + bomb          | ghost drops the pumpkin on the densest 3×3 cluster                       |
- * | bomb + bomb           | Giant Blast — 5×5 explosion                                              |
- * | bomb + cauldron       | most common colour → chain-detonating pumpkin bombs                      |
- * | ghost + cauldron      | most common colour → little ghosts that home to objective tiles          |
- * | cauldron + cauldron   | Night of the Witches — full-board clear, one layer off every obstacle    |
+ * | sweep + sweep         | Cross Sweep — row AND column through the pair                            |
+ * | sweep + homing  | blue carries the sweep to the densest row/column and sweeps it          |
+ * | sweep + blast          | Triple Sweep — 3 rows + 3 columns around the pair                        |
+ * | sweep + prism      | most common colour → launched sweeps                                     |
+ * | blue + blue         | three little blues hit three objective tiles                            |
+ * | blue + blast          | blue drops the red on the densest 3×3 cluster                       |
+ * | blast + blast           | Giant Blast — 5×5 explosion                                              |
+ * | blast + prism       | most common colour → chain-detonating red blasts                      |
+ * | blue + prism      | most common colour → little blues that home to objective tiles          |
+ * | prism + prism   | Night of the Witches — full-board clear, one layer off every obstacle    |
  *
  * Mechanism: the swap activator below replaces the default from
  * `powerups.ts` — imported first, so this registration wins regardless of
@@ -22,7 +22,7 @@
  * it as the activation plan's `detonate` list; the two cast tiles are stripped
  * to plain tiles so only the combined footprint (plus any power-up caught
  * inside it, which chains through the registry) goes off. That chaining is
- * what launches the cauldron family's converted tiles.
+ * what launches the prism family's converted tiles.
  *
  * Animatable events: `game.ts` records the `combo` event (pair + cells) from
  * the plan, the footprint lands as `clear` events (cause 'powerup'), and every
@@ -213,8 +213,8 @@ function convertMostCommon(board: Board, powerup: PowerupKind): Pos[] {
     // Tiles that already carry a power-up keep it — the player earned it.
     if (!tile || tile.powerup) continue
     tile.powerup = powerup
-    // Launched brooms alternate their sweep direction for varied coverage.
-    if (powerup === 'broom') tile.dir = cells.length % 2 === 0 ? 'h' : 'v'
+    // Launched sweeps alternate their sweep direction for varied coverage.
+    if (powerup === 'sweep') tile.dir = cells.length % 2 === 0 ? 'h' : 'v'
     cells.push(at)
   }
   return cells
@@ -227,7 +227,7 @@ export function crossSweep(ctx: ComboContext): Pos[] {
   return dedupeCells([...rowCells(ctx.board, ctx.a.y), ...colCells(ctx.board, ctx.a.x)])
 }
 
-/** Broom + Ghost — the ghost carries the broom to the densest line and sweeps it. */
+/** Broom + Ghost — the blue carries the sweep to the densest line and sweeps it. */
 export function carriedSweep(ctx: ComboContext): Pos[] {
   return densestLine(ctx.board, ctx.a)
 }
@@ -244,18 +244,18 @@ export function tripleSweep(ctx: ComboContext): Pos[] {
   return dedupeCells(cells)
 }
 
-/** Broom + Cauldron — the most common colour is turned into launched brooms. */
-export function broomLaunch(ctx: ComboContext): Pos[] {
-  return convertMostCommon(ctx.board, 'broom')
+/** Broom + Prism — the most common colour is turned into launched sweeps. */
+export function sweepLaunch(ctx: ComboContext): Pos[] {
+  return convertMostCommon(ctx.board, 'sweep')
 }
 
-/** Ghost + Ghost — three little ghosts hit three objective tiles. */
-export function ghostTrio(ctx: ComboContext): Pos[] {
+/** Ghost + Ghost — three little blues hit three objective tiles. */
+export function homingTrio(ctx: ComboContext): Pos[] {
   return objectiveTargets(ctx.board, [ctx.a, ctx.b], 3)
 }
 
-/** Ghost + Pumpkin — the pumpkin is dropped on the densest 3×3 cluster. */
-export function pumpkinDrop(ctx: ComboContext): Pos[] {
+/** Ghost + Pumpkin — the red is dropped on the densest 3×3 cluster. */
+export function redDrop(ctx: ComboContext): Pos[] {
   return densestWindow(ctx.board, 1, [ctx.b, ctx.a])
 }
 
@@ -264,17 +264,17 @@ export function giantBlast(ctx: ComboContext): Pos[] {
   return windowCells(ctx.board, ctx.a.x, ctx.a.y, 2)
 }
 
-/** Pumpkin + Cauldron — the most common colour chain-detonates as pumpkin bombs. */
-export function bombChain(ctx: ComboContext): Pos[] {
-  return convertMostCommon(ctx.board, 'bomb')
+/** Pumpkin + Prism — the most common colour chain-detonates as red blasts. */
+export function blastChain(ctx: ComboContext): Pos[] {
+  return convertMostCommon(ctx.board, 'blast')
 }
 
-/** Ghost + Cauldron — the most common colour becomes objective-homing little ghosts. */
-export function ghostSwarm(ctx: ComboContext): Pos[] {
-  return convertMostCommon(ctx.board, 'little-ghost')
+/** Ghost + Prism — the most common colour becomes objective-homing little blues. */
+export function homingSwarm(ctx: ComboContext): Pos[] {
+  return convertMostCommon(ctx.board, 'homing')
 }
 
-/** Cauldron + Cauldron — Night of the Witches: full-board clear, every obstacle loses one layer. */
+/** Prism + Prism — Night of the Witches: full-board clear, every obstacle loses one layer. */
 export function nightOfWitches(ctx: ComboContext): Pos[] {
   const cells: Pos[] = []
   for (let y = 0; y < ctx.board.height; y++) {
@@ -292,16 +292,16 @@ function comboKey(a: PowerupKind, b: PowerupKind): string {
 const COMBO_EFFECTS = new Map<string, ComboEffect>()
 
 const COMBOS: readonly (readonly [PowerupKind, PowerupKind, ComboEffect])[] = [
-  ['broom', 'broom', crossSweep],
-  ['broom', 'little-ghost', carriedSweep],
-  ['broom', 'bomb', tripleSweep],
-  ['broom', 'cauldron', broomLaunch],
-  ['little-ghost', 'little-ghost', ghostTrio],
-  ['little-ghost', 'bomb', pumpkinDrop],
-  ['bomb', 'bomb', giantBlast],
-  ['bomb', 'cauldron', bombChain],
-  ['little-ghost', 'cauldron', ghostSwarm],
-  ['cauldron', 'cauldron', nightOfWitches],
+  ['sweep', 'sweep', crossSweep],
+  ['sweep', 'homing', carriedSweep],
+  ['sweep', 'blast', tripleSweep],
+  ['sweep', 'prism', sweepLaunch],
+  ['homing', 'homing', homingTrio],
+  ['homing', 'blast', redDrop],
+  ['blast', 'blast', giantBlast],
+  ['blast', 'prism', blastChain],
+  ['homing', 'prism', homingSwarm],
+  ['prism', 'prism', nightOfWitches],
 ]
 
 for (const [a, b, effect] of COMBOS) COMBO_EFFECTS.set(comboKey(a, b), effect)
@@ -314,7 +314,7 @@ export function getComboEffect(a: PowerupKind, b: PowerupKind): ComboEffect | un
 /**
  * Swap activation with combos: two power-ups swapped together resolve as one
  * combined effect; every other swap keeps the default behaviour from
- * `powerups.ts` (only a cauldron charges itself with a plain tile's colour).
+ * `powerups.ts` (only a prism charges itself with a plain tile's colour).
  */
 function swapActivation(board: Board, a: Pos, b: Pos): ActivationPlan | null {
   const tileA = tileAt(board, a)
@@ -334,13 +334,13 @@ function swapActivation(board: Board, a: Pos, b: Pos): ActivationPlan | null {
       combo: { a: { at: a, powerup: powerA }, b: { at: b, powerup: powerB } },
     }
   }
-  if (tileA && tileB && powerB === 'cauldron' && !powerA) {
+  if (tileA && tileB && powerB === 'prism' && !powerA) {
     tileB.charge = tileA.type
-    return { detonate: [b], activated: { at: b, powerup: 'cauldron' } }
+    return { detonate: [b], activated: { at: b, powerup: 'prism' } }
   }
-  if (tileA && tileB && powerA === 'cauldron' && !powerB) {
+  if (tileA && tileB && powerA === 'prism' && !powerB) {
     tileA.charge = tileB.type
-    return { detonate: [a], activated: { at: a, powerup: 'cauldron' } }
+    return { detonate: [a], activated: { at: a, powerup: 'prism' } }
   }
   return null
 }

@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L35 — The Castle Gate: the finale chapter opens with a breather. Three
@@ -12,15 +12,15 @@ export const level35 = {
   seed: 20295,
   moves: 18,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, pink: 2, green: 2 },
   obstacles: [
-    { x: 1, y: 2, modifier: 'cobweb-1' },
-    { x: 3, y: 4, modifier: 'cobweb-1' },
-    { x: 5, y: 6, modifier: 'cobweb-1' },
+    { x: 1, y: 2, modifier: 'cover-1' },
+    { x: 3, y: 4, modifier: 'cover-1' },
+    { x: 5, y: 6, modifier: 'cover-1' },
   ],
   goals: [
-    { kind: 'collect', color: 'ghost', count: 12 },
-    { kind: 'collect', color: 'candy', count: 12 },
+    { kind: 'collect', color: 'blue', count: 12 },
+    { kind: 'collect', color: 'pink', count: 12 },
   ],
   starThresholds: [12, 13],
 } satisfies RawLevel

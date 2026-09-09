@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L7 — Count Snackula: the first boss house (Maple Lane finale). The count
@@ -13,13 +13,13 @@ export const level7 = {
   seed: 20267,
   moves: 20,
   shape: ['.......', '.......', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   obstacles: [
-    { x: 2, y: 3, modifier: 'cobweb-1' },
+    { x: 2, y: 3, modifier: 'cover-1' },
     { x: 3, y: 3, modifier: 'boss' },
-    { x: 4, y: 3, modifier: 'cobweb-1' },
+    { x: 4, y: 3, modifier: 'cover-1' },
   ],
-  boss: { hp: 6, throwEvery: 4, throws: 'cobweb-1' },
+  boss: { hp: 6, throwEvery: 4, throws: 'cover-1' },
   goals: [{ kind: 'boss', hits: 6 }],
   starThresholds: [5, 12],
 } satisfies RawLevel

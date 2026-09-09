@@ -1,10 +1,10 @@
 // Arm the engine's plug-in modules (power-ups, combos, obstacles, boss).
-// Levels reference registered modifier ids (cobweb-1, gravestone-2, …) and
+// Levels reference registered modifier ids (cover-1, blocker-2, …) and
 // their bosses need them at attach time, so anything that loads the campaign
 // gets the fully-armed engine — see src/engine/index.ts.
-import '../engine/index.ts'
-import type { LevelGame } from '../engine/goals.ts'
-import { createLevelGame } from '../engine/goals.ts'
+import '@gamiq/swap3'
+import type { LevelGame } from '@gamiq/swap3/goals'
+import { createLevelGame } from '@gamiq/swap3/goals'
 import { level1 } from './level-1.ts'
 import { level2 } from './level-2.ts'
 import { level3 } from './level-3.ts'

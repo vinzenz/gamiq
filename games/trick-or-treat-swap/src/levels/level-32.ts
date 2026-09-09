@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L32 — Six-Colour Storm: six colours and three thick webs on the cut
@@ -13,15 +13,15 @@ export const level32 = {
   seed: 20292,
   moves: 30,
   shape: ['##...##', '#.....#', '.......', '.......', '.......', '.......', '.......', '.......'],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2, green: 2 },
   obstacles: [
-    { x: 1, y: 3, modifier: 'cobweb-2' },
-    { x: 5, y: 3, modifier: 'cobweb-2' },
-    { x: 3, y: 5, modifier: 'cobweb-2' },
+    { x: 1, y: 3, modifier: 'cover-2' },
+    { x: 5, y: 3, modifier: 'cover-2' },
+    { x: 3, y: 5, modifier: 'cover-2' },
   ],
   goals: [
-    { kind: 'collect', color: 'potion', count: 16 },
-    { kind: 'collect', color: 'candy', count: 16 },
+    { kind: 'collect', color: 'green', count: 16 },
+    { kind: 'collect', color: 'pink', count: 16 },
   ],
   starThresholds: [4, 20],
 } satisfies RawLevel

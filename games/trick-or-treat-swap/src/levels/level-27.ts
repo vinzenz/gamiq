@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L27 — The Gourd Golem: the Pumpkin Patch finale. A carved colossus
@@ -22,16 +22,16 @@ export const level27 = {
     '........',
     '........',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2 },
   obstacles: [
     { x: 3, y: 3, modifier: 'lock' },
     { x: 4, y: 3, modifier: 'boss' },
     { x: 5, y: 3, modifier: 'lock' },
   ],
-  boss: { hp: 11, throwEvery: 4, throws: 'slime-3' },
+  boss: { hp: 11, throwEvery: 4, throws: 'spreader-3' },
   goals: [
     { kind: 'boss', hits: 11 },
-    { kind: 'collect', color: 'candy', count: 12 },
+    { kind: 'collect', color: 'pink', count: 12 },
   ],
   starThresholds: [0, 20],
 } satisfies RawLevel

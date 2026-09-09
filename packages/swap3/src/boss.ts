@@ -14,8 +14,8 @@ import type { Board, GameEvent, Pos } from './types.ts'
  *   event also feeds `GoalTracker.recordBossHit()`, so a boss goal with
  *   `hits: hp` is met exactly when the boss dies — win = boss hp 0.
  * - Every `throwEvery` moves the boss throws its obstacle onto a random plain
- *   cell: overlays (cobweb, ice, lock) wrap the tile that is there, occupants
- *   (gravestone, slime) replace it, mirroring the slime's own spread.
+ *   cell: overlays (cover, ice, lock) wrap the tile that is there, occupants
+ *   (blocker, spreader) replace it, mirroring the spreader's own spread.
  * - The bare `boss` modifier (no config) stays the level-format hook from the
  *   goals ticket: an inert marker whose hits the goal tracker counts by match
  *   adjacency.
@@ -34,7 +34,7 @@ export interface BossConfig {
   hp: number
   /** The boss throws an obstacle every `throwEvery` resolved moves. */
   throwEvery: number
-  /** Modifier id placed per throw, e.g. `cobweb-2` or `slime-3`. */
+  /** Modifier id placed per throw, e.g. `cover-2` or `spreader-3`. */
   throws: string
 }
 
@@ -86,7 +86,7 @@ const sessions = new WeakMap<Board, BossSession>()
 export function attachBoss(board: Board, config: BossConfig, onDamage?: () => void): void {
   if (!getCellModifier({ modifier: config.throws })) {
     throw new Error(
-      `trick-or-treat-swap: boss.throws '${config.throws}' is not a registered modifier — import the module that defines it`,
+      `swap3: boss.throws '${config.throws}' is not a registered modifier — import the module that defines it`,
     )
   }
   sessions.set(board, { config, untilThrow: config.throwEvery, onDamage })
@@ -110,7 +110,7 @@ function hitBoss(hit: ObstacleHit, emit: (event: GameEvent) => void): void {
 // — Throws ———————————————————————————————————————————————————————————————————
 
 /** Obstacle families that replace the tile instead of wrapping it. */
-const OCCUPANT_ROOTS = new Set(['gravestone', 'slime'])
+const OCCUPANT_ROOTS = new Set(['blocker', 'spreader'])
 
 function modifierRoot(id: string): string {
   return id.replace(/-[1-9][0-9]*$/, '')

@@ -1,4 +1,4 @@
-import type { RawLevel } from '../engine/goals.ts'
+import type { RawLevel } from '@gamiq/swap3/goals'
 
 /**
  * L33 — The Crooked Stair: the chapter's gauntlet, on a stair-stepped mask
@@ -22,18 +22,18 @@ export const level33 = {
     '.......#',
     '......##',
   ],
-  tileTypes: { pumpkin: 2, ghost: 2, skull: 2, bat: 2, candy: 2, potion: 2 },
+  tileTypes: { red: 2, blue: 2, ivory: 2, purple: 2, pink: 2, green: 2 },
   obstacles: [
     { x: 4, y: 1, modifier: 'lock' },
     { x: 2, y: 2, modifier: 'ice' },
     { x: 5, y: 3, modifier: 'ice' },
     { x: 1, y: 4, modifier: 'lock' },
     { x: 3, y: 5, modifier: 'ice' },
-    { x: 5, y: 6, modifier: 'gravestone-1' },
+    { x: 5, y: 6, modifier: 'blocker-1' },
   ],
   goals: [
-    { kind: 'collect', color: 'pumpkin', count: 20 },
-    { kind: 'collect', color: 'bat', count: 20 },
+    { kind: 'collect', color: 'red', count: 20 },
+    { kind: 'collect', color: 'purple', count: 20 },
   ],
   starThresholds: [2, 15],
 } satisfies RawLevel

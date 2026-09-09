@@ -4,7 +4,7 @@ import { applyGravity, makeTile, requireCell } from './board.ts'
 import { boardFromRows, FIXTURE_PALETTE, RUN4_GRID } from './board-strings.ts'
 import { Swap3Game } from './game.ts'
 import { detectShapes } from './match.ts'
-import { SLIME_SPREAD_MOVES } from './obstacles.ts'
+import { SPREADER_SPREAD_MOVES } from './obstacles.ts'
 import { isSwappable, registerPowerupEffect, runTurnHooks } from './registry.ts'
 import { resolveMatches } from './resolve.ts'
 import { createRng } from './rng.ts'
@@ -13,10 +13,10 @@ import { TILE_TYPES } from './types.ts'
 import './obstacles.ts'
 
 // Test-only power-up footprints, so the interaction matrix does not depend on
-// the real effects: the bomb is a "harpoon" (its own cell plus two to the
-// right), the broom sweeps its row.
-registerPowerupEffect('bomb', (ctx) => [ctx.at, { x: ctx.at.x + 2, y: ctx.at.y }])
-registerPowerupEffect('broom', (ctx) => {
+// the real effects: the blast is a "harpoon" (its own cell plus two to the
+// right), the sweep sweeps its row.
+registerPowerupEffect('blast', (ctx) => [ctx.at, { x: ctx.at.x + 2, y: ctx.at.y }])
+registerPowerupEffect('sweep', (ctx) => {
   const hit: Pos[] = []
   for (let x = 0; x < ctx.board.width; x++) hit.push({ x, y: ctx.at.y })
   return hit
@@ -43,7 +43,7 @@ function putPowerup(
   x: number,
   y: number,
   type: TileType,
-  powerup: 'bomb' | 'broom',
+  powerup: 'blast' | 'sweep',
 ): void {
   requireCell(board, { x, y }).tile = makeTile(type, powerup)
 }
@@ -63,52 +63,52 @@ function collect(): { events: GameEvent[]; emit: (event: GameEvent) => void } {
   return { events, emit: (event) => events.push(event) }
 }
 
-/** Settled 3×3 with a pumpkin column at x=1; the centre cell carries `modifier`. */
-function pumpkinColumnBoard(modifier: string): Board {
+/** Settled 3×3 with a red column at x=1; the centre cell carries `modifier`. */
+function redColumnBoard(modifier: string): Board {
   const board = emptyBoard(3, 3)
-  put(board, 0, 0, 'ghost')
-  put(board, 1, 0, 'pumpkin')
-  put(board, 2, 0, 'skull')
-  put(board, 0, 1, 'skull')
-  put(board, 1, 1, 'pumpkin', modifier)
-  put(board, 2, 1, 'ghost')
-  put(board, 0, 2, 'bat')
-  put(board, 1, 2, 'pumpkin')
-  put(board, 2, 2, 'candy')
+  put(board, 0, 0, 'blue')
+  put(board, 1, 0, 'red')
+  put(board, 2, 0, 'ivory')
+  put(board, 0, 1, 'ivory')
+  put(board, 1, 1, 'red', modifier)
+  put(board, 2, 1, 'blue')
+  put(board, 0, 2, 'purple')
+  put(board, 1, 2, 'red')
+  put(board, 2, 2, 'pink')
   return board
 }
 
 /**
- * 5×3 with a pumpkin run-3 at (0,1)–(2,1) whose third cell is a harpoon bomb:
- * the footprint is the run plus (4,1); (3,1) is cleared only as filler bat.
+ * 5×3 with a red run-3 at (0,1)–(2,1) whose third cell is a harpoon blast:
+ * the footprint is the run plus (4,1); (3,1) is cleared only as filler purple.
  * Everything else is settled, so caller-placed cells are the only modifiers.
  */
-function bombBoard(): Board {
+function blastBoard(): Board {
   const board = emptyBoard(5, 3)
-  const fill0: TileType[] = ['pumpkin', 'ghost', 'skull', 'pumpkin', 'ghost']
-  const fill2: TileType[] = ['ghost', 'skull', 'pumpkin', 'ghost', 'skull']
+  const fill0: TileType[] = ['red', 'blue', 'ivory', 'red', 'blue']
+  const fill2: TileType[] = ['blue', 'ivory', 'red', 'blue', 'ivory']
   fill0.forEach((type, x) => {
     put(board, x, 0, type)
   })
   fill2.forEach((type, x) => {
     put(board, x, 2, type)
   })
-  put(board, 0, 1, 'pumpkin')
-  put(board, 1, 1, 'pumpkin')
-  putPowerup(board, 2, 1, 'pumpkin', 'bomb')
-  put(board, 3, 1, 'bat')
-  put(board, 4, 1, 'skull')
+  put(board, 0, 1, 'red')
+  put(board, 1, 1, 'red')
+  putPowerup(board, 2, 1, 'red', 'blast')
+  put(board, 3, 1, 'purple')
+  put(board, 4, 1, 'ivory')
   return board
 }
 
-describe('cobweb', () => {
+describe('cover', () => {
   it('a match on the tile peels one layer, keeps the tile, and orders its events', () => {
-    const board = pumpkinColumnBoard('cobweb-2')
-    const result = resolveMatches(board, createRng(42), without('pumpkin'))
+    const board = redColumnBoard('cover-2')
+    const result = resolveMatches(board, createRng(42), without('red'))
     const cell = requireCell(board, { x: 1, y: 1 })
-    strictEqual(cell.modifier, 'cobweb-1')
-    strictEqual(cell.tile?.type, 'pumpkin')
-    deepStrictEqual(result.cleared.pumpkin, 2, 'the webbed tile is not counted as cleared')
+    strictEqual(cell.modifier, 'cover-1')
+    strictEqual(cell.tile?.type, 'red')
+    deepStrictEqual(result.cleared.red, 2, 'the webbed tile is not counted as cleared')
     deepStrictEqual(
       result.events.map((e) => e.type),
       ['match', 'obstacle', 'clear', 'spawn'],
@@ -116,9 +116,9 @@ describe('cobweb', () => {
   })
 
   it('the last layer comes off with a destroy event and the tile is freed in place', () => {
-    const board = pumpkinColumnBoard('cobweb-1')
+    const board = redColumnBoard('cover-1')
     const freed = requireCell(board, { x: 1, y: 1 }).tile
-    const result = resolveMatches(board, createRng(1), without('pumpkin'))
+    const result = resolveMatches(board, createRng(1), without('red'))
     strictEqual(modifierAt(board, 1, 1), undefined)
     ok(
       freed && board.cells.some((c) => c.tile?.id === freed.id),
@@ -126,70 +126,70 @@ describe('cobweb', () => {
     )
     deepStrictEqual(
       obstacleEvents(result).map((e) => [e.action, e.modifier]),
-      [['destroy', 'cobweb-1']],
+      [['destroy', 'cover-1']],
     )
   })
 
-  it('three matches strip a fresh cobweb; a bare cell then matches with no events', () => {
-    const board = pumpkinColumnBoard('cobweb-3')
+  it('three matches strip a fresh cover; a bare cell then matches with no events', () => {
+    const board = redColumnBoard('cover-3')
     const rng = createRng(42)
-    for (const expected of ['cobweb-2', 'cobweb-1', undefined]) {
-      put(board, 1, 0, 'pumpkin')
-      put(board, 1, 2, 'pumpkin')
-      resolveMatches(board, rng, without('pumpkin'))
+    for (const expected of ['cover-2', 'cover-1', undefined]) {
+      put(board, 1, 0, 'red')
+      put(board, 1, 2, 'red')
+      resolveMatches(board, rng, without('red'))
       strictEqual(modifierAt(board, 1, 1), expected)
     }
-    put(board, 1, 0, 'pumpkin')
-    put(board, 1, 1, 'pumpkin')
-    put(board, 1, 2, 'pumpkin')
-    const result = resolveMatches(board, rng, without('pumpkin'))
+    put(board, 1, 0, 'red')
+    put(board, 1, 1, 'red')
+    put(board, 1, 2, 'red')
+    const result = resolveMatches(board, rng, without('red'))
     deepStrictEqual(obstacleEvents(result), [], 'no web left, no obstacle events')
-    ok(result.cleared.pumpkin >= 3, 'the bare column clears like any other')
+    ok(result.cleared.red >= 3, 'the bare column clears like any other')
   })
 
   it('a match merely next to the web leaves it alone', () => {
     const board = emptyBoard(4, 2)
-    put(board, 0, 0, 'pumpkin', 'cobweb-2')
-    put(board, 1, 0, 'bat')
-    put(board, 2, 0, 'bat')
-    put(board, 3, 0, 'bat')
-    put(board, 0, 1, 'ghost')
-    put(board, 1, 1, 'skull')
-    put(board, 2, 1, 'pumpkin')
-    put(board, 3, 1, 'ghost')
-    const result = resolveMatches(board, createRng(42), without('pumpkin'))
+    put(board, 0, 0, 'red', 'cover-2')
+    put(board, 1, 0, 'purple')
+    put(board, 2, 0, 'purple')
+    put(board, 3, 0, 'purple')
+    put(board, 0, 1, 'blue')
+    put(board, 1, 1, 'ivory')
+    put(board, 2, 1, 'red')
+    put(board, 3, 1, 'blue')
+    const result = resolveMatches(board, createRng(42), without('red'))
     const cell = requireCell(board, { x: 0, y: 0 })
-    strictEqual(cell.modifier, 'cobweb-2')
-    strictEqual(cell.tile?.type, 'pumpkin')
+    strictEqual(cell.modifier, 'cover-2')
+    strictEqual(cell.tile?.type, 'red')
     deepStrictEqual(obstacleEvents(result), [])
   })
 })
 
-describe('gravestone', () => {
+describe('blocker', () => {
   it('an adjacent match chips one hit off and no tile spawns there', () => {
     const board = emptyBoard(5, 1)
-    put(board, 0, 0, undefined, 'gravestone-3')
-    put(board, 1, 0, 'bat')
-    put(board, 2, 0, 'bat')
-    put(board, 3, 0, 'bat')
-    put(board, 4, 0, 'skull')
+    put(board, 0, 0, undefined, 'blocker-3')
+    put(board, 1, 0, 'purple')
+    put(board, 2, 0, 'purple')
+    put(board, 3, 0, 'purple')
+    put(board, 4, 0, 'ivory')
     const result = resolveMatches(board, createRng(1), TILE_TYPES)
     const stone = requireCell(board, { x: 0, y: 0 })
-    strictEqual(stone.modifier, 'gravestone-2')
+    strictEqual(stone.modifier, 'blocker-2')
     strictEqual(stone.tile, undefined)
     deepStrictEqual(
       obstacleEvents(result).map((e) => [e.action, e.modifier]),
-      [['damage', 'gravestone-2']],
+      [['damage', 'blocker-2']],
     )
   })
 
   it('the last hit breaks it and the cell refills', () => {
     const board = emptyBoard(5, 1)
-    put(board, 0, 0, undefined, 'gravestone-1')
-    put(board, 1, 0, 'bat')
-    put(board, 2, 0, 'bat')
-    put(board, 3, 0, 'bat')
-    put(board, 4, 0, 'skull')
+    put(board, 0, 0, undefined, 'blocker-1')
+    put(board, 1, 0, 'purple')
+    put(board, 2, 0, 'purple')
+    put(board, 3, 0, 'purple')
+    put(board, 4, 0, 'ivory')
     const result = resolveMatches(board, createRng(1), TILE_TYPES)
     const stone = requireCell(board, { x: 0, y: 0 })
     strictEqual(stone.modifier, undefined)
@@ -202,10 +202,10 @@ describe('gravestone', () => {
 
   it('falling tiles stack on top of it instead of passing through', () => {
     const board = emptyBoard(1, 5)
-    put(board, 0, 0, 'bat')
-    put(board, 0, 2, undefined, 'gravestone-1')
-    put(board, 0, 3, 'bat')
-    put(board, 0, 4, 'bat')
+    put(board, 0, 0, 'purple')
+    put(board, 0, 2, undefined, 'blocker-1')
+    put(board, 0, 3, 'purple')
+    put(board, 0, 4, 'purple')
     deepStrictEqual(applyGravity(board), [{ from: { x: 0, y: 0 }, to: { x: 0, y: 1 } }])
     strictEqual(requireCell(board, { x: 0, y: 2 }).tile, undefined)
   })
@@ -224,14 +224,14 @@ describe('cursed ice', () => {
 
   it('an adjacent match cracks it free and the tile survives', () => {
     const board = emptyBoard(4, 1)
-    put(board, 0, 0, 'skull', 'ice')
-    put(board, 1, 0, 'skull')
-    put(board, 2, 0, 'skull')
-    put(board, 3, 0, 'skull')
-    const result = resolveMatches(board, createRng(42), without('skull'))
+    put(board, 0, 0, 'ivory', 'ice')
+    put(board, 1, 0, 'ivory')
+    put(board, 2, 0, 'ivory')
+    put(board, 3, 0, 'ivory')
+    const result = resolveMatches(board, createRng(42), without('ivory'))
     const cell = requireCell(board, { x: 0, y: 0 })
     strictEqual(cell.modifier, undefined)
-    strictEqual(cell.tile?.type, 'skull')
+    strictEqual(cell.tile?.type, 'ivory')
     strictEqual(isSwappable(cell), true, 'the cracked tile can be swapped again')
     deepStrictEqual(
       obstacleEvents(result).map((e) => e.action),
@@ -241,7 +241,7 @@ describe('cursed ice', () => {
 
   it('a frozen tile takes part in no match shape', () => {
     const board = emptyBoard(4, 1)
-    for (let x = 0; x < 4; x++) put(board, x, 0, 'skull', 'ice')
+    for (let x = 0; x < 4; x++) put(board, x, 0, 'ivory', 'ice')
     strictEqual(detectShapes(board).length, 0)
   })
 })
@@ -249,14 +249,14 @@ describe('cursed ice', () => {
 describe('lock', () => {
   it('an adjacent match of the locked colour frees the tile', () => {
     const board = emptyBoard(4, 1)
-    put(board, 0, 0, 'bat', 'lock')
-    put(board, 1, 0, 'bat')
-    put(board, 2, 0, 'bat')
-    put(board, 3, 0, 'bat')
-    const result = resolveMatches(board, createRng(42), without('bat'))
+    put(board, 0, 0, 'purple', 'lock')
+    put(board, 1, 0, 'purple')
+    put(board, 2, 0, 'purple')
+    put(board, 3, 0, 'purple')
+    const result = resolveMatches(board, createRng(42), without('purple'))
     const cell = requireCell(board, { x: 0, y: 0 })
     strictEqual(cell.modifier, undefined)
-    strictEqual(cell.tile?.type, 'bat')
+    strictEqual(cell.tile?.type, 'purple')
     deepStrictEqual(
       obstacleEvents(result).map((e) => e.action),
       ['destroy'],
@@ -265,14 +265,14 @@ describe('lock', () => {
 
   it('a match of another colour leaves the lock alone', () => {
     const board = emptyBoard(4, 1)
-    put(board, 0, 0, 'skull', 'lock')
-    put(board, 1, 0, 'bat')
-    put(board, 2, 0, 'bat')
-    put(board, 3, 0, 'bat')
-    const result = resolveMatches(board, createRng(42), without('skull'))
+    put(board, 0, 0, 'ivory', 'lock')
+    put(board, 1, 0, 'purple')
+    put(board, 2, 0, 'purple')
+    put(board, 3, 0, 'purple')
+    const result = resolveMatches(board, createRng(42), without('ivory'))
     const cell = requireCell(board, { x: 0, y: 0 })
     strictEqual(cell.modifier, 'lock')
-    strictEqual(cell.tile?.type, 'skull')
+    strictEqual(cell.tile?.type, 'ivory')
     deepStrictEqual(obstacleEvents(result), [])
   })
 
@@ -285,21 +285,21 @@ describe('lock', () => {
     const reject = outcome.events.at(-1)
     ok(reject && reject.type === 'reject' && reject.reason === 'locked')
     const trio = emptyBoard(3, 1)
-    put(trio, 0, 0, 'skull', 'lock')
-    put(trio, 1, 0, 'skull', 'lock')
-    put(trio, 2, 0, 'skull', 'lock')
+    put(trio, 0, 0, 'ivory', 'lock')
+    put(trio, 1, 0, 'ivory', 'lock')
+    put(trio, 2, 0, 'ivory', 'lock')
     strictEqual(detectShapes(trio).length, 0)
   })
 })
 
-describe('slime', () => {
+describe('spreader', () => {
   it('a match next to it dissolves it and the cell refills', () => {
     const board = emptyBoard(5, 1)
-    put(board, 0, 0, undefined, 'slime-3')
-    put(board, 1, 0, 'bat')
-    put(board, 2, 0, 'bat')
-    put(board, 3, 0, 'bat')
-    put(board, 4, 0, 'skull')
+    put(board, 0, 0, undefined, 'spreader-3')
+    put(board, 1, 0, 'purple')
+    put(board, 2, 0, 'purple')
+    put(board, 3, 0, 'purple')
+    put(board, 4, 0, 'ivory')
     const result = resolveMatches(board, createRng(1), TILE_TYPES)
     const cell = requireCell(board, { x: 0, y: 0 })
     strictEqual(cell.modifier, undefined)
@@ -312,26 +312,30 @@ describe('slime', () => {
 
   it('the countdown ticks down each move until it spreads onto a neighbour', () => {
     const board = emptyBoard(3, 3)
-    put(board, 1, 1, undefined, 'slime-3')
+    put(board, 1, 1, undefined, 'spreader-3')
     for (const [x, y] of [
       [0, 1],
       [2, 1],
       [1, 0],
       [1, 2],
     ] as const) {
-      put(board, x, y, 'pumpkin')
+      put(board, x, y, 'red')
     }
     const { events, emit } = collect()
     const rng = createRng(5)
 
     runTurnHooks(board, rng, emit)
-    strictEqual(modifierAt(board, 1, 1), 'slime-2')
+    strictEqual(modifierAt(board, 1, 1), 'spreader-2')
     runTurnHooks(board, rng, emit)
-    strictEqual(modifierAt(board, 1, 1), 'slime-1')
+    strictEqual(modifierAt(board, 1, 1), 'spreader-1')
     deepStrictEqual(events, [], 'ticking down is silent bookkeeping')
 
     runTurnHooks(board, rng, emit)
-    strictEqual(modifierAt(board, 1, 1), `slime-${SLIME_SPREAD_MOVES}`, 'the parent resets fully')
+    strictEqual(
+      modifierAt(board, 1, 1),
+      `spreader-${SPREADER_SPREAD_MOVES}`,
+      'the parent resets fully',
+    )
     const spreads = events.filter(
       (e): e is ObstacleEvent => e.type === 'obstacle' && e.action === 'spread',
     )
@@ -342,22 +346,22 @@ describe('slime', () => {
       Math.abs(target.x - 1) + Math.abs(target.y - 1) === 1,
       `the spread target (${target.x}, ${target.y}) must neighbour the parent`,
     )
-    strictEqual(modifierAt(board, target.x, target.y), `slime-${SLIME_SPREAD_MOVES}`)
+    strictEqual(modifierAt(board, target.x, target.y), `spreader-${SPREADER_SPREAD_MOVES}`)
     const cleared = events.filter((e) => e.type === 'clear' && e.cause === 'obstacle')
     strictEqual(cleared.length, 1, 'the tile under the new goo is eaten with a clear event')
   })
 
   it('the spread eats exactly one neighbour tile and skips modifier cells', () => {
     const board = emptyBoard(3, 3)
-    put(board, 1, 1, undefined, 'slime-1')
+    put(board, 1, 1, undefined, 'spreader-1')
     const neighbours = [
       [0, 1],
       [2, 1],
       [1, 0],
       [1, 2],
     ] as const
-    for (const [x, y] of neighbours) put(board, x, y, 'pumpkin')
-    put(board, 1, 0, 'skull', 'ice') // an iced cell is never a spread target
+    for (const [x, y] of neighbours) put(board, x, y, 'red')
+    put(board, 1, 0, 'ivory', 'ice') // an iced cell is never a spread target
     const { events, emit } = collect()
     runTurnHooks(board, createRng(5), emit)
 
@@ -368,88 +372,88 @@ describe('slime', () => {
     const target = spreads[0]?.at
     ok(target)
     const targetCell = requireCell(board, target)
-    strictEqual(targetCell.modifier, `slime-${SLIME_SPREAD_MOVES}`)
+    strictEqual(targetCell.modifier, `spreader-${SPREADER_SPREAD_MOVES}`)
     strictEqual(targetCell.tile, undefined, 'the goo ate the tile under the new patch')
     ok(events.some((e) => e.type === 'clear' && e.cause === 'obstacle'))
     for (const [x, y] of neighbours) {
       if (x === target.x && y === target.y) continue
       const cell = requireCell(board, { x, y })
       strictEqual(cell.modifier, x === 1 && y === 0 ? 'ice' : undefined)
-      strictEqual(cell.tile?.type, x === 1 && y === 0 ? 'skull' : 'pumpkin')
+      strictEqual(cell.tile?.type, x === 1 && y === 0 ? 'ivory' : 'red')
     }
   })
 
-  it('a blocked-in slime keeps its countdown and retries', () => {
+  it('a blocked-in spreader keeps its countdown and retries', () => {
     const board = emptyBoard(3, 3)
-    put(board, 1, 1, undefined, 'slime-1')
+    put(board, 1, 1, undefined, 'spreader-1')
     for (const [x, y] of [
       [0, 1],
       [2, 1],
       [1, 0],
       [1, 2],
     ] as const) {
-      put(board, x, y, undefined, 'gravestone-1')
+      put(board, x, y, undefined, 'blocker-1')
     }
     const { events, emit } = collect()
     runTurnHooks(board, createRng(5), emit)
-    strictEqual(modifierAt(board, 1, 1), 'slime-1', 'still primed to spread once space opens up')
+    strictEqual(modifierAt(board, 1, 1), 'spreader-1', 'still primed to spread once space opens up')
     deepStrictEqual(events, [])
   })
 
   it('ticks down during a real game move away from the action', () => {
     const board = boardFromRows(RUN4_GRID, FIXTURE_PALETTE)
     requireCell(board, { x: 4, y: 4 }).tile = undefined
-    requireCell(board, { x: 4, y: 4 }).modifier = 'slime-3'
+    requireCell(board, { x: 4, y: 4 }).modifier = 'spreader-3'
     const game = new Swap3Game({ seed: 3, board })
     const hint = game.findHint()
     ok(hint)
     const outcome = game.trySwap(hint.a, hint.b)
     strictEqual(outcome.accepted, true)
-    strictEqual(modifierAt(game.board, 4, 4), 'slime-2')
+    strictEqual(modifierAt(game.board, 4, 4), 'spreader-2')
   })
 })
 
 describe('power-up interaction matrix', () => {
   // Every blocker once inside the harpoon footprint at (4,1), once just off
   // it at (4,0) — adjacent only to footprint cells, never to match cells. The
-  // edge cobweb wears a bat so the skull pair below it cannot pre-match.
+  // edge cover wears a purple so the ivory pair below it cannot pre-match.
   const cases = [
     {
-      name: 'cobweb',
+      name: 'cover',
       place: (b: Board, x: number, y: number) =>
-        put(b, x, y, y === 0 ? 'bat' : 'skull', 'cobweb-2'),
-      intact: 'cobweb-2',
-      hit: 'cobweb-1',
+        put(b, x, y, y === 0 ? 'purple' : 'ivory', 'cover-2'),
+      intact: 'cover-2',
+      hit: 'cover-1',
     },
     {
-      name: 'gravestone',
-      place: (b: Board, x: number, y: number) => put(b, x, y, undefined, 'gravestone-3'),
-      intact: 'gravestone-3',
-      hit: 'gravestone-2',
+      name: 'blocker',
+      place: (b: Board, x: number, y: number) => put(b, x, y, undefined, 'blocker-3'),
+      intact: 'blocker-3',
+      hit: 'blocker-2',
     },
     {
       name: 'cursed ice',
-      place: (b: Board, x: number, y: number) => put(b, x, y, 'bat', 'ice'),
+      place: (b: Board, x: number, y: number) => put(b, x, y, 'purple', 'ice'),
       intact: 'ice',
       hit: undefined,
     },
     {
       name: 'lock',
-      place: (b: Board, x: number, y: number) => put(b, x, y, 'candy', 'lock'),
+      place: (b: Board, x: number, y: number) => put(b, x, y, 'pink', 'lock'),
       intact: 'lock',
       hit: undefined,
     },
     {
-      name: 'slime',
-      place: (b: Board, x: number, y: number) => put(b, x, y, undefined, 'slime-3'),
-      intact: 'slime-3',
+      name: 'spreader',
+      place: (b: Board, x: number, y: number) => put(b, x, y, undefined, 'spreader-3'),
+      intact: 'spreader-3',
       hit: undefined,
     },
   ]
 
   for (const c of cases) {
     it(`${c.name}: a power-up footprint covering it hits it directly`, () => {
-      const board = bombBoard()
+      const board = blastBoard()
       const cell = c.place(board, 4, 1)
       const tileBefore = cell.tile
       const result = resolveMatches(board, createRng(1), TILE_TYPES)
@@ -461,7 +465,7 @@ describe('power-up interaction matrix', () => {
     })
 
     it(`${c.name}: a footprint edge merely next to it does nothing`, () => {
-      const board = bombBoard()
+      const board = blastBoard()
       const cell = c.place(board, 4, 0)
       const tileBefore = cell.tile
       const result = resolveMatches(board, createRng(1), TILE_TYPES)
@@ -474,15 +478,15 @@ describe('power-up interaction matrix', () => {
     })
   }
 
-  it('a broom sweep hits a gravestone in its row and clears around it', () => {
+  it('a sweep sweep hits a blocker in its row and clears around it', () => {
     const board = emptyBoard(5, 3)
-    putPowerup(board, 0, 1, 'bat', 'broom')
-    put(board, 1, 1, 'bat')
-    put(board, 2, 1, 'bat')
-    put(board, 3, 1, 'skull')
-    put(board, 4, 1, undefined, 'gravestone-3')
-    const fill0: TileType[] = ['pumpkin', 'ghost', 'skull', 'pumpkin', 'ghost']
-    const fill2: TileType[] = ['ghost', 'skull', 'pumpkin', 'ghost', 'skull']
+    putPowerup(board, 0, 1, 'purple', 'sweep')
+    put(board, 1, 1, 'purple')
+    put(board, 2, 1, 'purple')
+    put(board, 3, 1, 'ivory')
+    put(board, 4, 1, undefined, 'blocker-3')
+    const fill0: TileType[] = ['red', 'blue', 'ivory', 'red', 'blue']
+    const fill2: TileType[] = ['blue', 'ivory', 'red', 'blue', 'ivory']
     fill0.forEach((type, x) => {
       put(board, x, 0, type)
     })
@@ -490,8 +494,8 @@ describe('power-up interaction matrix', () => {
       put(board, x, 2, type)
     })
     const result = resolveMatches(board, createRng(1), TILE_TYPES)
-    strictEqual(modifierAt(board, 4, 1), 'gravestone-2')
+    strictEqual(modifierAt(board, 4, 1), 'blocker-2')
     ok(obstacleEvents(result).some((e) => e.at.x === 4 && e.at.y === 1 && e.action === 'damage'))
-    deepStrictEqual(result.cleared.bat, 3, 'the sweep cleared the row around the stone')
+    deepStrictEqual(result.cleared.purple, 3, 'the sweep cleared the row around the stone')
   })
 })

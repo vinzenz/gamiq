@@ -4,10 +4,10 @@
  * import time, so importing this module (or the engine barrel) arms it.
  *
  * - Witch's Broom (match-4): sweeps its row or column, direction of the match.
- * - Pumpkin Bomb (L/T match-5): 3×3 blast around the bomb.
- * - Magic Cauldron (straight match-5): clears every tile of one colour — the
+ * - Pumpkin Bomb (L/T match-5): 3×3 blast around the blast.
+ * - Magic Prism (straight match-5): clears every tile of one colour — the
  *   tile it was swapped with (`charge`), otherwise a random colour (tap/chain).
- * - Little Ghost (2×2): homes to the nearest objective tile and pops it.
+ * - Homing Tile (2×2): homes to the nearest objective tile and pops it.
  *
  * Activation: tapping a power-up or swapping it with a tile detonates it and
  * spends a move; it occupies its board tile and is consumed by its effect.
@@ -26,8 +26,8 @@ import {
 } from './registry.ts'
 import type { Board, Pos, TileType } from './types.ts'
 
-/** Every cell of the broom's row (`dir 'h'` or missing) or column (`dir 'v'`). */
-export function broomEffect(ctx: PowerupEffectContext): Pos[] {
+/** Every cell of the sweep's row (`dir 'h'` or missing) or column (`dir 'v'`). */
+export function sweepEffect(ctx: PowerupEffectContext): Pos[] {
   const cells: Pos[] = []
   if (ctx.tile.dir === 'v') {
     for (let y = 0; y < ctx.board.height; y++) cells.push({ x: ctx.at.x, y })
@@ -37,8 +37,8 @@ export function broomEffect(ctx: PowerupEffectContext): Pos[] {
   return cells
 }
 
-/** Every cell of the 3×3 block centred on the bomb, clipped to the board. */
-export function bombEffect(ctx: PowerupEffectContext): Pos[] {
+/** Every cell of the 3×3 block centred on the blast, clipped to the board. */
+export function blastEffect(ctx: PowerupEffectContext): Pos[] {
   const cells: Pos[] = []
   for (let y = ctx.at.y - 1; y <= ctx.at.y + 1; y++) {
     for (let x = ctx.at.x - 1; x <= ctx.at.x + 1; x++) {
@@ -49,11 +49,11 @@ export function bombEffect(ctx: PowerupEffectContext): Pos[] {
 }
 
 /**
- * Every tile of the cauldron's charged colour, else a random colour present on
+ * Every tile of the prism's charged colour, else a random colour present on
  * the board. The charge is one-shot: the swap activator stamps it with the
- * colour of the tile the player swapped the cauldron with.
+ * colour of the tile the player swapped the prism with.
  */
-export function cauldronEffect(ctx: PowerupEffectContext): Pos[] {
+export function prismEffect(ctx: PowerupEffectContext): Pos[] {
   const present = new Set<TileType>()
   for (const cell of ctx.board.cells) if (cell.tile) present.add(cell.tile.type)
   const charge = ctx.tile.charge
@@ -79,7 +79,7 @@ export function cauldronEffect(ctx: PowerupEffectContext): Pos[] {
  * nearest tile at all while no goal system is plugged in. Ties break in
  * row-major order so activations stay reproducible.
  */
-export function ghostEffect(ctx: PowerupEffectContext): Pos[] {
+export function homingEffect(ctx: PowerupEffectContext): Pos[] {
   const target = findObjectiveTile(ctx.board, ctx.at) ?? nearestTile(ctx.board, ctx.at)
   return target ? [target] : []
 }
@@ -103,7 +103,7 @@ function nearestTile(board: Board, from: Pos): Pos | null {
 
 /**
  * Swap activation plan: the board is in post-swap state. Two power-ups always
- * combo (both detonate, `combo` event); a cauldron charges itself with the
+ * combo (both detonate, `combo` event); a prism charges itself with the
  * colour of the plain tile it was swapped with; every other power-up only
  * activates through an actual match.
  */
@@ -119,28 +119,28 @@ function swapActivation(board: Board, a: Pos, b: Pos): ActivationPlan | null {
       combo: { a: { at: a, powerup: powerA }, b: { at: b, powerup: powerB } },
     }
   }
-  if (tileA && tileB && powerB === 'cauldron' && !powerA) {
+  if (tileA && tileB && powerB === 'prism' && !powerA) {
     tileB.charge = tileA.type
-    return { detonate: [b], activated: { at: b, powerup: 'cauldron' } }
+    return { detonate: [b], activated: { at: b, powerup: 'prism' } }
   }
-  if (tileA && tileB && powerA === 'cauldron' && !powerB) {
+  if (tileA && tileB && powerA === 'prism' && !powerB) {
     tileA.charge = tileB.type
-    return { detonate: [a], activated: { at: a, powerup: 'cauldron' } }
+    return { detonate: [a], activated: { at: a, powerup: 'prism' } }
   }
   return null
 }
 
-/** Tap activation: any power-up detonates where it sits; a cauldron picks fresh. */
+/** Tap activation: any power-up detonates where it sits; a prism picks fresh. */
 function tapActivation(board: Board, at: Pos): ActivationPlan | null {
   const tile = tileAt(board, at)
   if (!tile?.powerup) return null
-  if (tile.powerup === 'cauldron') tile.charge = undefined
+  if (tile.powerup === 'prism') tile.charge = undefined
   return { detonate: [at], activated: { at, powerup: tile.powerup } }
 }
 
-registerPowerupEffect('broom', broomEffect)
-registerPowerupEffect('bomb', bombEffect)
-registerPowerupEffect('cauldron', cauldronEffect)
-registerPowerupEffect('little-ghost', ghostEffect)
+registerPowerupEffect('sweep', sweepEffect)
+registerPowerupEffect('blast', blastEffect)
+registerPowerupEffect('prism', prismEffect)
+registerPowerupEffect('homing', homingEffect)
 registerSwapActivator(swapActivation)
 registerTapActivator(tapActivation)
