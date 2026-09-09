@@ -1,5 +1,88 @@
 # Assets — Trick or Treat Swap
 
+## Chapter backgrounds and player marker refresh, 2026-09-08
+
+Generated with the built-in imagegen tool. The six chapter scenes use a
+1,254 × 1,254 source and WebP quality 80. The player marker uses a transparent
+256 × 256 WebP source. The map canvas uses high-quality image smoothing.
+
+### Shared chapter prompt
+
+Use case: stylized-concept. Asset type: square game map chapter background.
+Image 1 is the new Maple Lane style anchor. Image 2 is the old chapter image
+and is a theme reference only. Create a higher-quality background for a
+vertical scrolling level map. Keep the center as a calm dark open ground
+corridor because the game draws its own winding path, houses, level nodes, and
+player on top. Match Image 1 exactly in polished chunky storybook Halloween
+rendering, line weight, layered depth, rounded silhouettes, soft shadows, and
+finish. Use a square 2048-style canvas. Put environment detail mainly along
+both side edges. Make the scene useful with portrait and landscape cover
+crops, and continuous from the top edge to the bottom edge. Use midnight
+indigo `#1a1033`, shadow plum `#3b1f5e`, moonlit lavender `#8b7cc4`, plus the
+listed chapter accents. No text, letters, logos, watermark, characters, UI,
+level markers, path, road, central focal object, frame, border, gore,
+photorealism, or black empty bands.
+
+### Chapter scene prompts
+
+- `assets/meta/alley-ch1.webp`: Cozy crooked cottages, autumn maple trees,
+  white fences, lanterns, distant rooftops, starry deep-indigo sky, and one
+  pale moon. Clear moonlight with warm amber window and lantern accents.
+  Friendly spooky mood. Accents: pumpkin orange `#ff8a2a` and candy-corn
+  yellow `#ffd23f`. Reference: old `alley-ch1.webp` as the style and theme
+  reference.
+- `assets/meta/alley-ch2.webp`: Child-friendly old graveyard with rounded
+  gravestones, low iron fence, stone crosses, sparse curled trees, small
+  candles, distant mausoleum silhouettes, starry deep-indigo sky, and one
+  pale moon. Cool blue-lavender moonlight with sparse warm candle accents.
+  References: new `alley-ch1.webp` for style and old `alley-ch2.webp` for
+  theme.
+- `assets/meta/alley-ch3.webp`: Enchanted crooked forest with ancient twisted
+  trunks, hanging moss, low mushrooms, tangled roots, small green witch-fire
+  wisps, distant tree silhouettes, starry indigo sky, and one pale moon. Cool
+  violet moonlight with controlled witch-fire green `#6fe38a` accents.
+  References: new `alley-ch1.webp` for style and old `alley-ch3.webp` for
+  theme.
+- `assets/meta/alley-ch4.webp`: Autumn farm at night with rolling fields, low
+  split-rail fences, curling vines, hay bales, pumpkin clusters, distant barn,
+  gentle hills, starry indigo sky, and one pale moon. Warm pumpkin and lantern
+  glow against cool moonlight. References: new `alley-ch1.webp` for style and
+  old `alley-ch4.webp` for theme.
+- `assets/meta/alley-ch5.webp`: Windswept cemetery on rolling moonlit hills,
+  rounded old gravestones and stone crosses along the edges, sparse black
+  trees, a small distant chapel, low mist ribbons, layered ridgelines, starry
+  indigo sky, and one huge pale moon. Silver-lavender moonlight, low mist, and
+  small candle-gold accents. References: new `alley-ch1.webp` for style and old
+  `alley-ch5.webp` for theme.
+- `assets/meta/alley-ch6.webp`: Grand gothic castle district with tall gate
+  pillars, wrought-iron fencing, gargoyle silhouettes, dead rose hedges, sharp
+  distant towers, small red lanterns, drifting bats, deep plum clouds, and one
+  dramatic crimson moon. Deep violet night with restrained crimson `#ff5a5a`
+  rim light. References: new `alley-ch1.webp` for style and old
+  `alley-ch6.webp` for theme.
+
+### Player marker prompt
+
+- `assets/meta/player-ghost.webp`: Use case: stylized-concept. Asset type:
+  transparent player-location sprite for a game map. Image 1 is the existing
+  kid sprite and is a rendering-scale and style reference only. Image 2 is the
+  new Maple Lane background and is a palette reference only. Replace the
+  pumpkin-costume player with one cheerful child trick-or-treater in a
+  friendly pale ghost costume, holding a small brown candy bag. Use a rounded
+  hooded white sheet with the child's smiling face visible in a round opening,
+  lavender lining, short striped leggings, and simple dark shoes. Match the
+  polished chunky storybook Halloween game art of the references. Use clean
+  thick rounded violet outlines, layered hand-painted shading, soft candy-like
+  highlights, and large readable facial features. Show one full-body character
+  facing slightly right in a relaxed standing pose. Align the feet at the
+  bottom. Use a strong compact silhouette with about 8 percent clear margin.
+  Keep the sprite readable at 54 pixels tall. Use soft moonlight with a warm
+  lantern rim light. Use ghost white and pale lavender with deep plum outlines.
+  Limit orange and yellow accents to candy inside the bag. Use a genuine
+  transparent alpha background. No ground, shadow, glow field, backdrop,
+  border, text, letters, logos, watermark, extra characters, cropped limbs,
+  pumpkin hat, pumpkin torso, or jack-o-lantern.
+
 ## House and road refresh, 2026-09-08
 
 Generated with the built-in imagegen tool. The map uses these WebP files.

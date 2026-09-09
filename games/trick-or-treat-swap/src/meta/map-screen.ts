@@ -7,6 +7,7 @@ import alleyCh5Url from '../../assets/meta/alley-ch5.webp'
 import alleyCh6Url from '../../assets/meta/alley-ch6.webp'
 import houseClosedUrl from '../../assets/meta/house-cottage-closed.webp'
 import houseOpenUrl from '../../assets/meta/house-cottage-open.webp'
+import playerGhostUrl from '../../assets/meta/player-ghost.webp'
 import roadUrl from '../../assets/meta/road-cobblestone.webp'
 import { sfx } from '../game/audio.ts'
 import { roundRectPath } from '../game/draw.ts'
@@ -123,6 +124,7 @@ const CHAPTER_STRIP_URLS = [
 const CHAPTER_STRIP_IMAGES = CHAPTER_STRIP_URLS.map(loadImage)
 const HOUSE_CLOSED = loadImage(houseClosedUrl)
 const HOUSE_OPEN = loadImage(houseOpenUrl)
+const PLAYER_GHOST = loadImage(playerGhostUrl)
 const ROAD_TEXTURE = loadImage(roadUrl)
 const ROAD_EDGE_COLOR = 'rgb(34 24 55 / 0.55)'
 const ROAD_SHADE_COLOR = 'rgb(20 12 32 / 0.45)'
@@ -186,6 +188,19 @@ class AlleyMapScreen implements Screen {
   readonly #continueButton: HTMLButtonElement
   readonly #stopPointers: () => void
   #drag: { x0: number; y0: number; moved: boolean; camera0: number } | undefined
+  readonly #onWheel = (event: WheelEvent): void => {
+    if (event.ctrlKey) return
+    event.preventDefault()
+    const unit =
+      event.deltaMode === WheelEvent.DOM_DELTA_LINE
+        ? 16
+        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+          ? Math.max(1, this.#height)
+          : 1
+    const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX
+    this.#follow = false
+    this.#camera = this.#clampCamera(this.#camera + delta * unit)
+  }
 
   constructor(host: ScreenHost) {
     this.#host = host
@@ -214,6 +229,8 @@ class AlleyMapScreen implements Screen {
       this.#host.navigate('play', { level: this.#unlocked })
     })
     this.#refreshHud()
+
+    host.canvas.addEventListener('wheel', this.#onWheel, { passive: false })
 
     this.#stopPointers = trackPointers(host.canvas, {
       down: (p) => {
@@ -300,6 +317,7 @@ class AlleyMapScreen implements Screen {
   }
 
   dispose(): void {
+    this.#host.canvas.removeEventListener('wheel', this.#onWheel)
     this.#stopPointers()
   }
 
@@ -382,7 +400,7 @@ class AlleyMapScreen implements Screen {
     const doorId = LEVELS[this.#unlocked]?.id ?? this.#unlocked + 1
     this.#continueButton.textContent = done
       ? `🍬 Replay door ${doorId}`
-      : `🎃 Knock on door ${doorId}`
+      : `👻 Knock on door ${doorId}`
   }
 
   #updateCandy(dt: number): void {
@@ -526,6 +544,8 @@ class AlleyMapScreen implements Screen {
       layer.height = height
       const paint = layer.getContext('2d')
       if (!paint) return
+      paint.imageSmoothingEnabled = true
+      paint.imageSmoothingQuality = 'high'
       // One scene per chapter. Repeating the strip creates visible horizon seams.
       paint.drawImage(image, 0, 0, pixelWidth, height)
       if (chapter > 0) {
@@ -823,58 +843,26 @@ class AlleyMapScreen implements Screen {
     if (this.#nodes.length === 0) return
     const p = this.#avatarPos()
     const bob = Math.sin(this.#time * 2.4) * 1.2
-    const f = 1
+    const size = clampRange(this.#width * 0.18, 64, 82)
     ctx.save()
     ctx.fillStyle = 'rgb(0 0 0 / 0.3)'
     ctx.beginPath()
-    ctx.ellipse(p.x, p.y + 2, 13, 4, 0, 0, Math.PI * 2)
+    ctx.ellipse(p.x, p.y + 2, size * 0.22, size * 0.065, 0, 0, Math.PI * 2)
     ctx.fill()
-    // Feet.
-    ctx.fillStyle = '#2a1c30'
-    ctx.fillRect(p.x - 6, p.y - 7, 4, 7)
-    ctx.fillRect(p.x + 2, p.y - 7, 4, 7)
-    // Candy bag.
-    ctx.fillStyle = '#7a5a36'
-    roundRectPath(ctx, p.x - f * 13 - 4, p.y - 15 + bob, 9, 11, 2)
-    ctx.fill()
-    // Pumpkin-costume body.
-    const by = p.y - 16 + bob
-    ctx.fillStyle = '#ff8a2a'
-    ctx.strokeStyle = '#b85f14'
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.arc(p.x, by, 12, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.stroke()
-    ctx.strokeStyle = 'rgb(184 95 20 / 0.7)'
-    ctx.lineWidth = 1.5
-    for (const off of [-5, 5]) {
+    if (PLAYER_GHOST.complete && PLAYER_GHOST.naturalWidth > 0) {
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(PLAYER_GHOST, p.x - size / 2, p.y - size + bob, size, size)
+    } else {
+      ctx.fillStyle = '#f7f0ff'
       ctx.beginPath()
-      ctx.ellipse(p.x, by, Math.abs(off), 12, 0, -Math.PI / 2, Math.PI / 2, off > 0)
-      ctx.stroke()
-    }
-    ctx.fillStyle = '#4f8f3a'
-    ctx.fillRect(p.x - 2, by - 16, 4, 5)
-    // Face.
-    for (const side of [-1, 1]) {
-      ctx.fillStyle = '#fff7e6'
-      ctx.beginPath()
-      ctx.arc(p.x + side * 3.6 + f * 2, by - 3, 2.8, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = '#40260a'
-      ctx.beginPath()
-      ctx.arc(p.x + side * 3.6 + f * 3, by - 3, 1.3, 0, Math.PI * 2)
+      ctx.arc(p.x, p.y - size * 0.42 + bob, size * 0.2, Math.PI, 0)
+      ctx.lineTo(p.x + size * 0.2, p.y - size * 0.12 + bob)
+      ctx.lineTo(p.x, p.y - size * 0.2 + bob)
+      ctx.lineTo(p.x - size * 0.2, p.y - size * 0.12 + bob)
+      ctx.closePath()
       ctx.fill()
     }
-    ctx.fillStyle = '#5c2d08'
-    ctx.beginPath()
-    ctx.moveTo(p.x - 5 + f, by + 4)
-    ctx.lineTo(p.x - 2 + f, by + 7)
-    ctx.lineTo(p.x + f, by + 4)
-    ctx.lineTo(p.x + 2 + f, by + 7)
-    ctx.lineTo(p.x + 5 + f, by + 4)
-    ctx.closePath()
-    ctx.fill()
     ctx.restore()
   }
 
