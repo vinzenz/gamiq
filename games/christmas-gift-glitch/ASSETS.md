@@ -29,7 +29,29 @@ background before WebP conversion. Runtime sprites are 384 px. Character and bos
 | `assets/meta/juni-and-crumb.webp` | Child inventor Juni and gingerbread robot Crumb waving from a toy bubble sleigh, transparent background, style block. | `tile-bell.webp` | shipped |
 | `assets/meta/boss-wrap-9000.webp` | Malfunctioning teal wrapping robot with ribbon-spool arms, caught wrapping the moon, transparent background, style block. | `tile-bell.webp` | shipped |
 | `assets/meta/sky-islands-map.webp` | Portrait North Pole sky islands with workshop roofs, cocoa cups, clockwork clouds, aurora, and open center for a route, style block. | `tile-bell.webp` | shipped |
+| `assets/meta/sky-islands-map-v2.webp` | High-depth portrait North Pole sky islands with brighter edge details, deeper midnight shadows, and a calm central route corridor, style block. | `sky-islands-map.webp` | shipped |
 
 `obstacle-ice.webp` and `obstacle-lock.webp` come from the original TOTS rule adapter. Their neutral
 frost and lock shapes fit both themes. Text, map paths, level buttons, stars, snow, and all HUD art
 are code-drawn for sharp scaling.
+
+### Map background refresh
+
+Generated with the built-in imagegen tool. The final WebP is 941 by 1672 pixels.
+
+Final prompt:
+
+> Use case: precise-object-edit. Asset type: portrait background for a vertical scrolling
+> Christmas game map. Image 1 is the edit target and style anchor. Improve the background's
+> game-map readability and visual depth while preserving its whimsical North Pole sky-island
+> identity. Keep the same premium 2D storybook gouache illustration, soft navy outlines, rounded
+> silhouettes, handmade texture, and warm golden winter light. Preserve the tall portrait layout
+> and the large open central corridor for the game's winding level route. Move visual weight
+> toward both side edges. Add more layered depth with small distant floating islands, clockwork
+> clouds, snowy workshop roofs, gift parcels, cocoa details, and aurora light near the edges only.
+> Deepen midnight blue shadows, brighten warm windows and gold details, and add clearer cool-to-warm
+> depth separation. Use cranberry #C83E4D, pine #2B8A6E, gold #F5C451, ice blue #7CC9E8, and cream
+> #FFF5DB. Keep the central 40 percent calm, low contrast, and free of focal objects because live
+> path nodes and labels appear there. Keep all content inside the canvas. No text, letters,
+> numbers, UI, route, path, level markers, characters, logos, watermark, photorealism, horror,
+> black bands, or hard border.

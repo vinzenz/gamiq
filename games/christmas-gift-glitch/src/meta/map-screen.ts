@@ -1,6 +1,6 @@
 import { loadJSON, saveJSON, trackPointers, unlockAudio } from '@gamiq/shared'
 import avatarUrl from '../../assets/meta/juni-and-crumb.webp'
-import mapBackgroundUrl from '../../assets/meta/sky-islands-map.webp'
+import mapBackgroundUrl from '../../assets/meta/sky-islands-map-v2.webp'
 import { sfx } from '../game/audio.ts'
 import { loadStars } from '../game/progress.ts'
 import { registerScreen, type Screen, type ScreenHost } from '../game/screens.ts'
@@ -111,6 +111,18 @@ class JourneyMapScreen implements Screen {
   #time = 0
   #celebrating = false
   #drag: { y: number; camera: number; moved: boolean } | undefined
+  readonly #onWheel = (event: WheelEvent): void => {
+    if (event.ctrlKey) return
+    event.preventDefault()
+    const unit =
+      event.deltaMode === WheelEvent.DOM_DELTA_LINE
+        ? 16
+        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+          ? Math.max(1, this.#height)
+          : 1
+    const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX
+    this.#camera = this.#clampCamera(this.#camera + delta * unit)
+  }
 
   constructor(host: ScreenHost) {
     this.#host = host
@@ -135,6 +147,8 @@ class JourneyMapScreen implements Screen {
     const state = normalizeMapState(loadJSON<unknown>(MAP_KEY, null)) ?? { celebrated: 0 }
     this.#celebrating = pendingCelebration(state, this.#unlocked, LEVELS.length) !== undefined
     if (this.#celebrating) saveJSON(MAP_KEY, { celebrated: this.#unlocked })
+
+    host.canvas.addEventListener('wheel', this.#onWheel, { passive: false })
 
     this.#stopPointers = trackPointers(host.canvas, {
       down: (p) => {
@@ -189,6 +203,7 @@ class JourneyMapScreen implements Screen {
   }
 
   dispose(): void {
+    this.#host.canvas.removeEventListener('wheel', this.#onWheel)
     this.#stopPointers()
   }
 
@@ -254,9 +269,9 @@ class JourneyMapScreen implements Screen {
       ctx.globalAlpha = 1
     }
     const gradient = ctx.createLinearGradient(0, 0, 0, height)
-    gradient.addColorStop(0, 'rgb(3 18 42 / .16)')
-    gradient.addColorStop(0.5, 'rgb(18 52 71 / .34)')
-    gradient.addColorStop(1, 'rgb(3 18 42 / .62)')
+    gradient.addColorStop(0, 'rgb(3 18 42 / .08)')
+    gradient.addColorStop(0.5, 'rgb(18 52 71 / .2)')
+    gradient.addColorStop(1, 'rgb(3 18 42 / .44)')
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, width, height)
   }
@@ -270,8 +285,8 @@ class JourneyMapScreen implements Screen {
       const top = last.y - 96
       const bottom = first.y + 82
       const gradient = ctx.createLinearGradient(0, top, 0, bottom)
-      gradient.addColorStop(0, `${theme.top}b0`)
-      gradient.addColorStop(1, `${theme.bottom}9a`)
+      gradient.addColorStop(0, `${theme.top}42`)
+      gradient.addColorStop(1, `${theme.bottom}36`)
       ctx.fillStyle = gradient
       ctx.fillRect(0, top, width, bottom - top)
       rounded(ctx, 18, top + 18, Math.min(width - 36, 250), 35, 18)
