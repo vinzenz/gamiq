@@ -1,0 +1,22 @@
+{
+  "name": "@gamiq/christmas-gift-glitch",
+  "private": true,
+  "type": "module",
+  "title": "The Great Gift Glitch",
+  "emoji": "🎁",
+  "description": "A 40-level Christmas match-3 adventure. Help Juni and Crumb repair a broken Advent Engine before WRAP-9000 gift-wraps the moon.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "check": "tsc --noEmit && node --test \"src/**/*.test.ts\"",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@gamiq/shared": "workspace:*",
+    "@gamiq/swap3": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}

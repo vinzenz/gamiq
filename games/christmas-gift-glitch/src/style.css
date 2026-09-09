@@ -1,0 +1,408 @@
+:root {
+  color-scheme: dark;
+  /* Numeric safe-area insets for canvas layout (read via getComputedStyle). */
+  --glitch-sat: env(safe-area-inset-top, 0px);
+  --glitch-sab: env(safe-area-inset-bottom, 0px);
+  --glitch-sal: env(safe-area-inset-left, 0px);
+  --glitch-sar: env(safe-area-inset-right, 0px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: #081c34;
+  color: #fff5db;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Screen DOM layer: transparent to touches except buttons and overlays. */
+#screens {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#fullscreen {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: calc(env(safe-area-inset-right, 0px) + 10px);
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 10px;
+  background: rgb(11 14 20 / 0.55);
+  color: rgb(255 245 219 / 0.8);
+  font-size: 20px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+#fullscreen:active {
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* — Play screen: HUD ——————————————————————————————————————————————— */
+
+.glitch-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.glitch-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: calc(var(--glitch-sat) + 10px) calc(var(--glitch-sar) + 62px) 0
+    calc(var(--glitch-sal) + 10px);
+}
+
+.glitch-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.glitch-icon-btn,
+.glitch-icon-spacer {
+  width: 42px;
+  height: 42px;
+  flex: none;
+}
+
+.glitch-icon-btn {
+  pointer-events: auto;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 10px;
+  background: rgb(11 14 20 / 0.55);
+  color: rgb(255 245 219 / 0.85);
+  font-size: 15px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.glitch-icon-btn:active {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.glitch-title {
+  text-align: center;
+  min-width: 0;
+}
+
+.glitch-level-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(124 201 232 / 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.glitch-moves {
+  font-size: 13px;
+  color: rgb(255 245 219 / 0.75);
+}
+
+.glitch-moves-count {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f5c451;
+}
+
+.glitch-moves.glitch-pulse .glitch-moves-count {
+  animation: glitch-pop 0.3s ease;
+}
+
+.glitch-goals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.glitch-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 5px;
+  border: 1px solid rgb(124 201 232 / 0.45);
+  border-radius: 999px;
+  background: rgb(22 13 40 / 0.8);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.glitch-chip:active {
+  transform: scale(0.95);
+}
+
+.glitch-chip-open {
+  border-color: rgb(245 196 81 / 0.9);
+  color: #f5c451;
+}
+
+/* Goal explanation popover: lives below the HUD and never takes pointer
+   events, so explaining a goal can never block the board (see the
+   .glitch-overlay[hidden] lesson). */
+.glitch-goal-hint {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  width: min(340px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border: 1px solid rgb(245 196 81 / 0.45);
+  border-radius: 12px;
+  background: rgb(13 48 70 / 0.94);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.5);
+  color: rgb(255 245 219);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  animation: glitch-pop 0.25s ease;
+  pointer-events: none;
+}
+
+.glitch-goal-hint[hidden] {
+  display: none;
+}
+
+.glitch-chip-img {
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+}
+
+.glitch-chip-emoji {
+  font-size: 18px;
+  line-height: 1;
+  padding-inline: 3px;
+}
+
+.glitch-chip-deliver {
+  border-color: rgb(200 62 77 / 0.6);
+}
+
+.glitch-chip-done {
+  border-color: rgb(94 232 148 / 0.8);
+  color: rgb(94 232 148);
+}
+
+.glitch-chip.glitch-pulse {
+  animation: glitch-pop 0.3s ease;
+}
+
+@keyframes glitch-pop {
+  40% {
+    transform: scale(1.15);
+  }
+}
+
+/* — Play screen: intro banner ————————————————————————————————————— */
+
+.glitch-banner {
+  position: absolute;
+  top: 32%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  animation: glitch-banner 2s ease forwards;
+}
+
+.glitch-banner strong {
+  font-size: 30px;
+  color: #f5c451;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.6);
+}
+
+.glitch-banner span {
+  font-size: 15px;
+  color: rgb(255 245 219 / 0.8);
+}
+
+@keyframes glitch-banner {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  15%,
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* — Play screen: overlays ———————————————————————————————————————— */
+
+.glitch-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(11 14 20 / 0.62);
+  animation: glitch-fade 0.25s ease;
+}
+
+/* `display: grid` above would beat the UA's `[hidden] { display: none }`, so an
+   overlay parked with the `hidden` attribute would stay rendered — an empty,
+   full-screen, pointer-eating wall. */
+.glitch-overlay[hidden] {
+  display: none;
+}
+
+.glitch-panel {
+  width: min(320px, 100%);
+  padding: 26px 24px 22px;
+  border: 1px solid rgb(124 201 232 / 0.5);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #0b3141, #0d3046);
+  text-align: center;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 0.55);
+  animation: glitch-panel-in 0.3s ease;
+}
+
+.glitch-panel-title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.glitch-panel-title.glitch-win {
+  color: #f5c451;
+}
+
+.glitch-panel-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: rgb(255 245 219 / 0.7);
+}
+
+.glitch-stars {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.glitch-stars span {
+  color: rgb(255 255 255 / 0.14);
+}
+
+.glitch-stars span.on {
+  color: #f5c451;
+  text-shadow: 0 0 14px rgb(245 196 81 / 0.6);
+  animation: glitch-star 0.45s ease backwards;
+}
+
+@keyframes glitch-star {
+  0% {
+    transform: scale(0) rotate(-30deg);
+  }
+  70% {
+    transform: scale(1.25) rotate(6deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.glitch-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.glitch-btn {
+  pointer-events: auto;
+  padding: 12px 18px;
+  border: 1px solid rgb(124 201 232 / 0.5);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(255 245 219 / 0.9);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.glitch-btn:active {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.glitch-btn.glitch-primary {
+  border-color: rgb(200 62 77 / 0.7);
+  background: linear-gradient(180deg, #c83e4d, #a82d42);
+  color: #0b3141;
+}
+
+.glitch-btn.glitch-primary:active {
+  background: linear-gradient(180deg, #e75a59, #c83e4d);
+}
+
+@keyframes glitch-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes glitch-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
